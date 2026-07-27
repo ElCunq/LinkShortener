@@ -59,8 +59,8 @@
     <span><strong>Canlı Üretim Modu:</strong> Canlı Supabase PostgreSQL veritabanına bağlıdır. Tüm özel domainler ve yönlendirmeler aktiftir.</span>
   </div>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- MAIN CONTAINER (Hidden until authenticated) -->
+  <main id="mainContainer" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
     <!-- STATS OVERVIEW CARDS -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -315,14 +315,12 @@
 
   </main>
 
-  <!-- AUTH MODAL -->
-  <div id="authModal" class="modal-overlay hidden" onclick="if(event.target === this) closeAuthModal();">
+  <!-- AUTH MODAL (Strictly unclosable until authenticated) -->
+  <div id="authModal" class="modal-overlay hidden">
     <div class="modal-card max-w-md w-full p-6 relative">
-      <button type="button" id="closeAuthModalBtn" onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold p-1 cursor-pointer">&times;</button>
-      
       <div class="mb-4">
         <h3 class="text-lg font-bold text-white mb-1">Giriş Yap / Kayıt Ol</h3>
-        <p class="text-xs text-slate-400">Hesabınıza giriş yapın veya yeni bir hesap oluşturun.</p>
+        <p class="text-xs text-slate-400">Yönetim paneline erişmek için giriş yapın veya kayıt olun.</p>
       </div>
 
       <form id="authForm" class="space-y-4">

@@ -11,6 +11,7 @@ let state = {
 };
 
 // DOM Elements
+const mainContainer = document.getElementById('mainContainer');
 const authBtn = document.getElementById('authBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const userEmailBadge = document.getElementById('userEmailBadge');
@@ -59,7 +60,9 @@ const toastMessage = document.getElementById('toastMessage');
 
 // Global Modal Control Functions
 window.closeAuthModal = () => {
-  if (authModal) authModal.classList.add('hidden');
+  if (state.accessToken && state.user && authModal) {
+    authModal.classList.add('hidden');
+  }
 };
 
 window.openAuthModal = () => {
@@ -142,9 +145,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   setupEventListeners();
 
-  if (!state.accessToken) {
+  if (!state.accessToken || !state.user) {
+    if (mainContainer) mainContainer.classList.add('hidden');
     window.openAuthModal();
   } else {
+    if (mainContainer) mainContainer.classList.remove('hidden');
     window.closeAuthModal();
     updateUserHeader();
     await fetchAllData();
@@ -393,15 +398,19 @@ async function registerUser(email, password) {
 }
 
 function updateUserHeader() {
-  if (state.user && userEmailBadge && authBtn && logoutBtn) {
+  if (state.user && state.accessToken && userEmailBadge && authBtn && logoutBtn) {
     userEmailBadge.textContent = state.user.email;
     userEmailBadge.classList.remove('hidden');
     authBtn.classList.add('hidden');
     logoutBtn.classList.remove('hidden');
+    if (mainContainer) mainContainer.classList.remove('hidden');
+    if (authModal) authModal.classList.add('hidden');
   } else if (userEmailBadge && authBtn && logoutBtn) {
     userEmailBadge.classList.add('hidden');
     authBtn.classList.remove('hidden');
     logoutBtn.classList.add('hidden');
+    if (mainContainer) mainContainer.classList.add('hidden');
+    if (authModal) authModal.classList.remove('hidden');
   }
 }
 

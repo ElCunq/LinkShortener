@@ -6,31 +6,40 @@ dotenv.config();
 const SUPABASE_BASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://db.orfa.dev/p/link-shortener').replace(/\/$/, '');
 const SUPABASE_API_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-async function supabaseFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
+async function supabaseFetch<T = any>(path: string, options: RequestInit = {}, retries = 2): Promise<T> {
   const url = `${SUPABASE_BASE_URL}${path}`;
   const headers: Record<string, string> = {
     'apikey': SUPABASE_API_KEY,
     'Authorization': `Bearer ${SUPABASE_API_KEY}`,
     'Accept': 'application/json',
     'Content-Type': 'application/json',
+    'Connection': 'close',
     ...(options.headers as Record<string, string> || {})
   };
 
-  const res = await fetch(url, { ...options, headers });
-  if (!res.ok) {
-    const errorText = await res.text();
-    let parsed: any;
-    try { parsed = JSON.parse(errorText); } catch {}
-    const msg = parsed?.message || parsed?.error || errorText || `Supabase REST request failed (${res.status})`;
-    throw new Error(msg);
-  }
+  try {
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+      const errorText = await res.text();
+      let parsed: any;
+      try { parsed = JSON.parse(errorText); } catch {}
+      const msg = parsed?.message || parsed?.error || errorText || `Supabase REST request failed (${res.status})`;
+      throw new Error(msg);
+    }
 
-  const text = await res.text();
-  if (!text || !text.trim() || res.status === 204) {
-    return [] as unknown as T;
-  }
+    const text = await res.text();
+    if (!text || !text.trim() || res.status === 204) {
+      return [] as unknown as T;
+    }
 
-  return JSON.parse(text) as T;
+    return JSON.parse(text) as T;
+  } catch (err: any) {
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, 250));
+      return supabaseFetch<T>(path, options, retries - 1);
+    }
+    throw err;
+  }
 }
 
 export class SupabaseService {

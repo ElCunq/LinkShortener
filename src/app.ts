@@ -50,16 +50,18 @@ app.get('/health', (req: Request, res: Response) => {
 app.get('/', (req: Request, res: Response) => {
   const rawHost = req.get('host') || req.headers.host || req.hostname || 'localhost';
   const cleanHost = rawHost.split(':')[0].toLowerCase();
-  const systemDomain = (process.env.SYSTEM_DOMAIN || 'short.orfa.dev').toLowerCase();
-  const configuredAdminDomains = (process.env.ADMIN_DOMAINS || 'localhost,127.0.0.1,short.orfa.dev,db.orfa.dev').toLowerCase().split(',');
+  const configuredAdminDomains = (process.env.ADMIN_DOMAINS || 'shorts.orfa.dev,short.orfa.dev,localhost,127.0.0.1,db.orfa.dev').toLowerCase().split(',');
 
-  // Check if accessing via authorized Admin / Dashboard domain
-  const isAdminDomain = configuredAdminDomains.some(d => cleanHost === d.trim() || cleanHost.includes(d.trim()) || cleanHost === systemDomain);
+  // Strictly check if current host is in authorized Admin / Dashboard domains list
+  const isAdminDomain = configuredAdminDomains.some(d => {
+    const trimmed = d.trim();
+    return trimmed.length > 0 && (cleanHost === trimmed || cleanHost.includes(trimmed));
+  });
 
   if (isAdminDomain) {
     res.sendFile(path.join(__dirname, '../public/index.html'));
   } else {
-    // Shlink Privacy & Security Model: Custom shortener domains entered empty do NOT expose the admin portal
+    // Shlink Privacy & Security Model: Shortener domains (go.orfa.dev, etc.) entered empty return 404 and NEVER expose admin portal
     res.status(404).send(`
       <!DOCTYPE html>
       <html lang="tr">
