@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  link-shortener:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: link-shortener-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST:-db.orfa.dev}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-a546fbb25e7d6822c9b52918f05fce37}
+      - DB_NAME=${DB_NAME:-postgres}
+      - DB_SSL=${DB_SSL:-false}
+      - JWT_SECRET=${JWT_SECRET:-40a6ef291e1eeeb5fe17decf719b05124c1aa1f552b7730dc70d6d3a72056cca}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoiZGItb3JmYS1kZXYiLCJ0ZW5hbnQiOiJsaW5rLXNob3J0ZW5lciIsImlhdCI6MTc4NTEzOTQ3Mn0.83VJxxjZw1r0XUqKLNAyta8WMyKqXPBOWDA9H54UTlI}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://db.orfa.dev/p/link-shortener}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoiZGItb3JmYS1kZXYiLCJ0ZW5hbnQiOiJsaW5rLXNob3J0ZW5lciIsImlhdCI6MTc4NTEzOTQ3Mn0.83VJxxjZw1r0XUqKLNAyta8WMyKqXPBOWDA9H54UTlI}
+      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-db.orfa.dev}
+    labels:
+      - "coolify.managed=true"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
