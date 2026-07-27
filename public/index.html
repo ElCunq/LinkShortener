@@ -173,8 +173,80 @@
       </div>
     </div>
 
-    <!-- TAB 2: DOMAINS & DNS SETUP CONTENT -->
+    <!-- TAB 2: DOMAIN MANAGEMENT CONTENT -->
     <div id="domainsTab" class="tab-content hidden">
+
+      <!-- EXPANDABLE DOMAIN SETUP & DNS GUIDE -->
+      <details class="group bg-slate-900/80 border border-indigo-500/30 rounded-xl mb-6 overflow-hidden transition-all duration-200">
+        <summary class="flex items-center justify-between p-4 cursor-pointer select-none bg-slate-900/90 hover:bg-slate-800/80 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <span class="font-bold text-sm text-white">📖 Domain & DNS Configuration Guide</span>
+              <span class="ml-2 text-xs text-indigo-400 font-normal">Click to expand step-by-step setup instructions</span>
+            </div>
+          </div>
+          <svg class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+
+        <div class="p-5 border-t border-slate-800/80 bg-slate-950/60 space-y-4 text-xs text-slate-300">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- OPTION A -->
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                <span class="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xs">1</span>
+                Option A: Zero-Config System Domain
+              </div>
+              <p class="text-slate-400">No DNS configuration required! Use the default <code>System Domain</code> option when creating links for instant 0-setup shortening.</p>
+              <div class="bg-slate-950 p-2 rounded border border-slate-900 font-mono text-[11px] text-slate-400">
+                URL Format: <code>https://links.orfa.dev/your-slug</code>
+              </div>
+            </div>
+
+            <!-- OPTION B -->
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center gap-2 text-indigo-400 font-bold text-sm">
+                <span class="w-5 h-5 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-xs">2</span>
+                Option B: Custom Subdomain (e.g. go.orfa.dev)
+              </div>
+              <p class="text-slate-400">Add 1 simple CNAME record in your Cloudflare / DNS provider targeting your main application domain.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[11px] space-y-1">
+                <div><span class="text-indigo-400">Type:</span> CNAME</div>
+                <div><span class="text-indigo-400">Name / Host:</span> <code>go</code> (or <code>*</code> for wildcard)</div>
+                <div><span class="text-indigo-400">Target:</span> <code>links.orfa.dev</code></div>
+                <div><span class="text-emerald-400">Cloudflare Proxy:</span> Orange Cloud (Proxied)</div>
+              </div>
+            </div>
+
+            <!-- OPTION C -->
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center gap-2 text-violet-400 font-bold text-sm">
+                <span class="w-5 h-5 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-xs">3</span>
+                Option C: External Domain (link.customer.com)
+              </div>
+              <p class="text-slate-400">For third-party customers connecting their external domain, add 1 CNAME pointing to your server.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[11px] space-y-1">
+                <div><span class="text-violet-400">Type:</span> CNAME</div>
+                <div><span class="text-violet-400">Host:</span> <code>link</code></div>
+                <div><span class="text-violet-400">Target:</span> <code>links.orfa.dev</code></div>
+                <div><span class="text-slate-400">Status:</span> Auto-verified upon click</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="bg-indigo-950/40 border border-indigo-800/40 p-3 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-indigo-400 font-bold">💡 Pro Tip:</span>
+              <span class="text-slate-300">Once your CNAME record is added, click <strong>"Verify DNS Now"</strong> in the list below to immediately activate your domain!</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
       <!-- Add Domain Card -->
       <div class="card p-6 mb-6">
         <h3 class="text-base font-bold text-white mb-2">Add New Custom Domain</h3>
