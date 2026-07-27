@@ -46,9 +46,41 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'Link Shortener API', db_host: process.env.DB_HOST || 'db.orfa.dev' });
 });
 
-// Explicit root route for Web Dashboard UI
+// Explicit root route for Web Dashboard UI with Shlink-Style Domain Isolation Security
 app.get('/', (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  const rawHost = req.get('host') || req.headers.host || req.hostname || 'localhost';
+  const cleanHost = rawHost.split(':')[0].toLowerCase();
+  const systemDomain = (process.env.SYSTEM_DOMAIN || 'short.orfa.dev').toLowerCase();
+  const configuredAdminDomains = (process.env.ADMIN_DOMAINS || 'localhost,127.0.0.1,short.orfa.dev,db.orfa.dev').toLowerCase().split(',');
+
+  // Check if accessing via authorized Admin / Dashboard domain
+  const isAdminDomain = configuredAdminDomains.some(d => cleanHost === d.trim() || cleanHost.includes(d.trim()) || cleanHost === systemDomain);
+
+  if (isAdminDomain) {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+  } else {
+    // Shlink Privacy & Security Model: Custom shortener domains entered empty do NOT expose the admin portal
+    res.status(404).send(`
+      <!DOCTYPE html>
+      <html lang="tr">
+      <head>
+        <meta charset="UTF-8">
+        <title>404 - Bulunamadı</title>
+        <style>
+          body { font-family: system-ui, sans-serif; display: grid; place-content: center; height: 100vh; margin: 0; background: #0b0f19; color: #64748b; text-align: center; }
+          h1 { font-size: 3.5rem; margin-bottom: 0.5rem; color: #334155; }
+          p { color: #64748b; font-size: 1.1rem; }
+        </style>
+      </head>
+      <body>
+        <div>
+          <h1>404</h1>
+          <p>İstenen sayfa veya bağlantı bulunamadı.</p>
+        </div>
+      </body>
+      </html>
+    `);
+  }
 });
 
 // Short Link Wildcard Redirect Service Router (Catch-all for custom domains and short URLs)
