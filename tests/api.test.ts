@@ -11,13 +11,13 @@ describe('Link Shortener API & Service Test Suite', () => {
   let domainId: string;
   let linkId: string;
   let apiKey: string;
-  const testHost = `go_${Date.now()}.orfa.dev`;
+  const testHost = `go_${Date.now()}.example.com`;
 
   let testEmail: string;
   const testPassword = 'Password123!';
 
   beforeAll(() => {
-    testEmail = `test_${Date.now()}_${Math.floor(Math.random()*1000)}@orfa.dev`;
+    testEmail = `test_${Date.now()}_${Math.floor(Math.random()*1000)}@example.com`;
     DataService.clearMockData();
     RedirectService.clearCache();
   });
@@ -203,7 +203,7 @@ describe('Link Shortener API & Service Test Suite', () => {
   });
 
   describe('6. Redirect Engine & Click Analytics', () => {
-    test('GET /github with Host: go.orfa.dev redirects with 302', async () => {
+    test('GET /github with Host redirects with 302', async () => {
       const res = await request(app)
         .get('/github')
         .set('Host', testHost)
@@ -214,7 +214,7 @@ describe('Link Shortener API & Service Test Suite', () => {
       expect(res.header.location).toBe('https://github.com/torvalds/linux');
     });
 
-    test('GET /nonexistent with Host: go.orfa.dev returns 404', async () => {
+    test('GET /nonexistent with Host returns 404', async () => {
       const res = await request(app)
         .get('/nonexistent')
         .set('Host', testHost);

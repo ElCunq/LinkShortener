@@ -199,7 +199,7 @@
               </div>
               <p class="text-slate-400">Hiçbir DNS ayarı gerektirmez! Link kısaltırken <code>Sistem Domaini</code> seçeneğini seçerek anında link üretebilirsiniz.</p>
               <div class="bg-slate-950 p-2 rounded border border-slate-900 font-mono text-[11px] text-slate-400">
-                URL Formatı: <code>https://go.orfa.dev/link-adi</code>
+                URL Formatı: <code>https://<span class="dns-system-domain">...</span>/link-adi</code>
               </div>
             </div>
 
@@ -207,13 +207,13 @@
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
               <div class="flex items-center gap-2 text-indigo-400 font-bold text-sm">
                 <span class="w-5 h-5 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-xs">2</span>
-                Seçenek B: Şirket İçi Özel Domain (Örn: go.orfa.dev)
+                Seçenek B: Şirket İçi Özel Domain
               </div>
               <p class="text-slate-400">Cloudflare panelinizde 1 adet CNAME kaydı oluşturun. Coolify'da bir daha ayar yapmanız gerekmez.</p>
               <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[11px] space-y-1">
                 <div><span class="text-indigo-400">Tür (Type):</span> CNAME</div>
                 <div><span class="text-indigo-400">Ad (Name):</span> <code>go</code></div>
-                <div><span class="text-indigo-400">Hedef (Target):</span> <code>go.orfa.dev</code></div>
+                <div><span class="text-indigo-400">Hedef (Target):</span> <code class="dns-system-domain">...</code></div>
                 <div><span class="text-emerald-400">Cloudflare Proxy:</span> Turuncu Bulut (Proxied)</div>
               </div>
             </div>
@@ -228,7 +228,7 @@
               <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[11px] space-y-1">
                 <div><span class="text-violet-400">Tür (Type):</span> CNAME</div>
                 <div><span class="text-violet-400">Ad (Host):</span> <code>link</code> (veya <code>@</code>)</div>
-                <div><span class="text-violet-400">Hedef (Target):</span> <code>go.orfa.dev</code></div>
+                <div><span class="text-violet-400">Hedef (Target):</span> <code class="dns-system-domain">...</code></div>
                 <div><span class="text-slate-400">Durum:</span> Doğrudan tek hamlede (302) yönlenir</div>
               </div>
             </div>
@@ -238,7 +238,7 @@
           <div class="bg-indigo-950/40 border border-indigo-800/40 p-3 rounded-lg flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-indigo-400 font-bold">💡 İpucu:</span>
-              <span class="text-slate-300">Coolify paneline sadece <code>https://short.orfa.dev, https://go.orfa.dev</code> yazılır. Sonrasında eklenen 1000 farklı müşteri domaini için **ASLA Coolify'a girmeye ve Deploy yapmaya gerek kalmaz!**</span>
+              <span class="text-slate-300">Coolify paneline Admin ve Sistem domainlerini ekledikten sonra, eklenen 1000 farklı müşteri domaini için <strong>ASLA Coolify'a girmeye ve Deploy yapmaya gerek kalmaz!</strong></span>
             </div>
           </div>
         </div>
@@ -247,10 +247,10 @@
       <!-- Add Domain Card -->
       <div class="card p-6 mb-6">
         <h3 class="text-base font-bold text-white mb-2">Yeni Özel Domain Ekle</h3>
-        <p class="text-xs text-slate-400 mb-4">Özel domain veya subdomain'inizi bağlayın (Örn: <code>go.orfa.dev</code> veya <code>link.sirketiniz.com</code>). Sunucuyu yeniden başlatmadan çalışma zamanında %100 dinamik kaydolur.</p>
+        <p class="text-xs text-slate-400 mb-4">Özel domain veya subdomain'inizi bağlayın (Örn: <code>link.sirketiniz.com</code>). Sunucuyu yeniden başlatmadan çalışma zamanında %100 dinamik kaydolur.</p>
 
         <form id="addDomainForm" class="flex flex-col sm:flex-row gap-3">
-          <input type="text" id="newHostnameInput" required placeholder="go.orfa.dev" class="input-field flex-1">
+          <input type="text" id="newHostnameInput" required placeholder="go.domain.com" class="input-field flex-1">
           <button type="submit" class="btn-primary whitespace-nowrap">Domain Ekle</button>
         </form>
       </div>

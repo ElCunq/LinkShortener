@@ -9,7 +9,7 @@ function seedMockData() {
   const demoUserId = 'usr_demo12345';
   memoryDb.users.set(demoUserId, {
     id: demoUserId,
-    email: 'demo@orfa.dev',
+    email: 'demo@example.com',
     password_hash: bcrypt.hashSync('Password123!', 10),
     status: 'active',
     created_at: new Date()
@@ -19,7 +19,7 @@ function seedMockData() {
   memoryDb.domains.set(domain1Id, {
     id: domain1Id,
     user_id: demoUserId,
-    hostname: 'go.orfa.dev',
+    hostname: 'go.example.com',
     verification_token: 'shortlink-verification=demo_token_123',
     verification_status: 'active',
     ssl_status: 'active',
@@ -67,7 +67,7 @@ function seedMockData() {
     user_id: demoUserId,
     domain_id: domain2Id,
     slug: 'docs',
-    destination_url: 'https://docs.orfa.dev/api',
+    destination_url: 'https://docs.example.com/api',
     redirect_type: 302,
     is_active: true,
     created_at: new Date()

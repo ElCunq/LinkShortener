@@ -7,7 +7,8 @@ let state = {
   user: JSON.parse(localStorage.getItem('ls_user') || 'null'),
   domains: [],
   links: [],
-  apiKeys: []
+  apiKeys: [],
+  serverConfig: { system_domain: window.location.hostname || 'localhost', admin_domains: [] }
 };
 
 // DOM Elements
@@ -143,6 +144,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.closeApiKeyModal();
   window.closeQrModal();
 
+  // Fetch dynamic server config (SYSTEM_DOMAIN, ADMIN_DOMAINS) from backend
+  try {
+    const configRes = await fetch(`${API_BASE}/config`);
+    if (configRes.ok) {
+      state.serverConfig = await configRes.json();
+    }
+  } catch (e) { /* use defaults */ }
+
   setupEventListeners();
 
   if (!state.accessToken || !state.user) {
@@ -223,7 +232,7 @@ function setupEventListeners() {
           domainId = state.domains[0].id;
         } else {
           // Auto-create default system domain for 0-config instant link shortening
-          const systemDomain = await apiPost('/domains', { hostname: window.location.hostname || 'orfa.dev' });
+          const systemDomain = await apiPost('/domains', { hostname: state.serverConfig.system_domain });
           await fetchDomains();
           domainId = systemDomain.id;
         }
@@ -417,6 +426,15 @@ function updateUserHeader() {
 // --- DATA FETCHING & RENDERING ---
 async function fetchAllData() {
   await Promise.all([fetchDomains(), fetchLinks(), fetchApiKeys()]);
+  populateDnsGuide();
+}
+
+// Populate DNS guide placeholders with dynamic SYSTEM_DOMAIN from server config
+function populateDnsGuide() {
+  const sd = state.serverConfig.system_domain || window.location.hostname || 'localhost';
+  document.querySelectorAll('.dns-system-domain').forEach(el => {
+    el.textContent = sd;
+  });
 }
 
 async function fetchDomains() {
@@ -456,7 +474,7 @@ function populateDomainSelect() {
   // Always include default system domain for zero-config instant link shortening
   const defaultOpt = document.createElement('option');
   defaultOpt.value = 'default_system';
-  defaultOpt.textContent = 'Sistem Domaini (short.orfa.dev)';
+  defaultOpt.textContent = `Sistem Domaini (${state.serverConfig.system_domain})`;
   domainSelect.appendChild(defaultOpt);
 
   state.domains.forEach(d => {
@@ -497,7 +515,7 @@ function renderDomains() {
 
     const systemTarget = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
       ? window.location.hostname
-      : 'go.orfa.dev';
+      : state.serverConfig.system_domain;
 
     const card = document.createElement('div');
     card.className = 'card p-5';
@@ -541,7 +559,7 @@ function renderLinks() {
 
   state.links.forEach(l => {
     const domain = state.domains.find(d => d.id === l.domain_id);
-    const hostname = domain ? domain.hostname : 'short.orfa.dev';
+    const hostname = domain ? domain.hostname : state.serverConfig.system_domain;
     const shortUrl = `http://${hostname}/${l.slug}`;
 
     const card = document.createElement('div');

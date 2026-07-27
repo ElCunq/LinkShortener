@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const CNAME_TARGET = process.env.CNAME_TARGET || 'db.orfa.dev';
+const CNAME_TARGET = process.env.SYSTEM_DOMAIN || process.env.CNAME_TARGET || 'localhost';
 
 const resolver = new Resolver();
 resolver.setServers(['1.1.1.1', '8.8.8.8']);

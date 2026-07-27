@@ -3,7 +3,7 @@ import { User, Domain, ShortLink, ClickEvent, ApiKey } from '../types';
 
 dotenv.config();
 
-const SUPABASE_BASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://db.orfa.dev/p/link-shortener').replace(/\/$/, '');
+const SUPABASE_BASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:8000').replace(/\/$/, '');
 const SUPABASE_API_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 async function supabaseFetch<T = any>(path: string, options: RequestInit = {}, retries = 2): Promise<T> {

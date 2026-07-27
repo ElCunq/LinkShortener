@@ -1,4 +1,4 @@
--- Link Shortener SaaS Schema for PostgreSQL at db.orfa.dev
+-- Link Shortener SaaS Schema for PostgreSQL
 
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(36) PRIMARY KEY,

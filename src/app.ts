@@ -43,14 +43,22 @@ app.use('/api/v1/api-keys', apiKeyRoutes);
 
 // System Health Check
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', service: 'Link Shortener API', db_host: process.env.DB_HOST || 'db.orfa.dev' });
+  res.status(200).json({ status: 'ok', service: 'Link Shortener API', db_host: process.env.DB_HOST || 'localhost' });
+});
+
+// Public config endpoint for frontend dynamic domain resolution
+app.get('/api/v1/config', (req: Request, res: Response) => {
+  res.status(200).json({
+    system_domain: process.env.SYSTEM_DOMAIN || 'localhost',
+    admin_domains: (process.env.ADMIN_DOMAINS || 'localhost,127.0.0.1').split(',').map(d => d.trim()),
+  });
 });
 
 // Explicit root route for Web Dashboard UI with Shlink-Style Domain Isolation Security
 app.get('/', (req: Request, res: Response) => {
   const rawHost = req.get('host') || req.headers.host || req.hostname || 'localhost';
   const cleanHost = rawHost.split(':')[0].toLowerCase();
-  const configuredAdminDomains = (process.env.ADMIN_DOMAINS || 'shorts.orfa.dev,short.orfa.dev,localhost,127.0.0.1,db.orfa.dev').toLowerCase().split(',');
+  const configuredAdminDomains = (process.env.ADMIN_DOMAINS || 'localhost,127.0.0.1').toLowerCase().split(',');
 
   // Strictly check if current host is in authorized Admin / Dashboard domains list
   const isAdminDomain = configuredAdminDomains.some(d => {

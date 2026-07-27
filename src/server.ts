@@ -9,12 +9,12 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 async function startServer() {
   console.log('Initializing Link Shortener API & Service...');
 
-  // Test database connection to db.orfa.dev
+  // Test database connection
   await checkDbConnection();
 
   app.listen(PORT, () => {
     console.log(`🚀 Link Shortener Service is running on port ${PORT}`);
-    console.log(`Target Database Host: ${process.env.DB_HOST || 'db.orfa.dev'}`);
+    console.log(`Target Database Host: ${process.env.DB_HOST || 'localhost'}`);
   });
 }
 

@@ -215,7 +215,7 @@ router.get('/:id/qrcode', async (req: AuthenticatedRequest, res: Response): Prom
     }
 
     const domain = await DataService.findDomainById(link.domain_id);
-    const hostname = domain ? domain.hostname : 'go.orfa.dev';
+    const hostname = domain ? domain.hostname : (process.env.SYSTEM_DOMAIN || 'localhost');
     const protocol = domain?.ssl_status === 'active' ? 'https' : 'http';
     const shortUrl = `${protocol}://${hostname}/${link.slug}`;
 
