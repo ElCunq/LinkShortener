@@ -197,9 +197,9 @@
                 <span class="w-5 h-5 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-xs">1</span>
                 Seçenek A: Sıfır Ayarlı Sistem Domaini
               </div>
-              <p class="text-slate-400">Hiçbir DNS ayarı gerektirmez! Link oluştururken varsayılan <code>System Domain</code> seçeneğini seçerek anında link kısaltabilirsiniz.</p>
+              <p class="text-slate-400">Hiçbir DNS ayarı gerektirmez! Link kısaltırken <code>Sistem Domaini</code> seçeneğini seçerek anında link üretebilirsiniz.</p>
               <div class="bg-slate-950 p-2 rounded border border-slate-900 font-mono text-[11px] text-slate-400">
-                URL Formatı: <code>https://short.orfa.dev/link-adi</code>
+                URL Formatı: <code>https://go.orfa.dev/link-adi</code>
               </div>
             </div>
 
@@ -207,13 +207,13 @@
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
               <div class="flex items-center gap-2 text-indigo-400 font-bold text-sm">
                 <span class="w-5 h-5 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-xs">2</span>
-                Seçenek B: Özel Subdomain (Örn: go.orfa.dev)
+                Seçenek B: Şirket İçi Özel Domain (Örn: go.orfa.dev)
               </div>
-              <p class="text-slate-400">Cloudflare veya DNS sağlayıcınızda ana uygulamanıza yönlenen 1 adet basit CNAME kaydı ekleyin.</p>
+              <p class="text-slate-400">Cloudflare panelinizde 1 adet CNAME kaydı oluşturun. Coolify'da bir daha ayar yapmanız gerekmez.</p>
               <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[11px] space-y-1">
                 <div><span class="text-indigo-400">Tür (Type):</span> CNAME</div>
-                <div><span class="text-indigo-400">Ad (Name):</span> <code>go</code> (veya wildcard için <code>*</code>)</div>
-                <div><span class="text-indigo-400">Hedef (Target):</span> <code>short.orfa.dev</code></div>
+                <div><span class="text-indigo-400">Ad (Name):</span> <code>go</code></div>
+                <div><span class="text-indigo-400">Hedef (Target):</span> <code>go.orfa.dev</code></div>
                 <div><span class="text-emerald-400">Cloudflare Proxy:</span> Turuncu Bulut (Proxied)</div>
               </div>
             </div>
@@ -222,14 +222,14 @@
             <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2">
               <div class="flex items-center gap-2 text-violet-400 font-bold text-sm">
                 <span class="w-5 h-5 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-xs">3</span>
-                Seçenek C: Harici Müşteri Domaini (link.musteri.com)
+                Seçenek C: Harici Müşteri Domaini (link.sirket.com)
               </div>
-              <p class="text-slate-400">Harici bir müşterinizin kendi domainini bağlaması için 1 adet CNAME kaydı eklemesi yeterlidir.</p>
+              <p class="text-slate-400">Müşterilerinizin kendi domainini eklemesi için DNS panellerine 1 CNAME eklemeleri yeterlidir (%100 Deploysuz).</p>
               <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[11px] space-y-1">
                 <div><span class="text-violet-400">Tür (Type):</span> CNAME</div>
-                <div><span class="text-violet-400">Ad (Host):</span> <code>link</code></div>
-                <div><span class="text-violet-400">Hedef (Target):</span> <code>short.orfa.dev</code></div>
-                <div><span class="text-slate-400">Durum:</span> Tıklamayla otomatik doğrulanır</div>
+                <div><span class="text-violet-400">Ad (Host):</span> <code>link</code> (veya <code>@</code>)</div>
+                <div><span class="text-violet-400">Hedef (Target):</span> <code>go.orfa.dev</code></div>
+                <div><span class="text-slate-400">Durum:</span> Doğrudan tek hamlede (302) yönlenir</div>
               </div>
             </div>
 
@@ -238,7 +238,7 @@
           <div class="bg-indigo-950/40 border border-indigo-800/40 p-3 rounded-lg flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-indigo-400 font-bold">💡 İpucu:</span>
-              <span class="text-slate-300">CNAME kaydını ekledikten sonra aşağıdaki listeden <strong>"Verify DNS Now"</strong> butonuna basarak domaininizi anında aktifleştirebilirsiniz!</span>
+              <span class="text-slate-300">Coolify paneline sadece <code>https://short.orfa.dev, https://go.orfa.dev</code> yazılır. Sonrasında eklenen 1000 farklı müşteri domaini için **ASLA Coolify'a girmeye ve Deploy yapmaya gerek kalmaz!**</span>
             </div>
           </div>
         </div>

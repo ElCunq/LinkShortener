@@ -26,11 +26,12 @@ services:
       - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://db.orfa.dev/p/link-shortener}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoiZGItb3JmYS1kZXYiLCJ0ZW5hbnQiOiJsaW5rLXNob3J0ZW5lciIsImlhdCI6MTc4NTEzOTQ3Mn0.83VJxxjZw1r0XUqKLNAyta8WMyKqXPBOWDA9H54UTlI}
-      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-short.orfa.dev}
+      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
+      - ADMIN_DOMAINS=${ADMIN_DOMAINS:-short.orfa.dev,localhost,127.0.0.1,db.orfa.dev}
     labels:
       - "coolify.managed=true"
       - "traefik.enable=true"
-      - "traefik.http.routers.link-shortener.rule=Host(`short.orfa.dev`) || Host(`go.orfa.dev`) || HostRegexp(`{subdomain:[a-z0-9-]+}.orfa.dev`)"
+      - "traefik.http.routers.link-shortener.rule=Host(`short.orfa.dev`) || Host(`go.orfa.dev`)"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s

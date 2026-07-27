@@ -488,7 +488,7 @@ function renderDomains() {
 
     const systemTarget = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
       ? window.location.hostname
-      : 'short.orfa.dev';
+      : 'go.orfa.dev';
 
     const card = document.createElement('div');
     card.className = 'card p-5';
