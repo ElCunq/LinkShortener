@@ -82,22 +82,22 @@ app.get('/:slug', async (req: Request, res: Response, next: NextFunction): Promi
     if (!redirectResult) {
       res.status(404).send(`
         <!DOCTYPE html>
-        <html lang="en">
+        <html lang="tr">
         <head>
           <meta charset="UTF-8">
-          <title>404 - Link Not Found</title>
+          <title>404 - Bağlantı Bulunamadı</title>
           <style>
             body { font-family: system-ui, sans-serif; display: grid; place-content: center; height: 100vh; margin: 0; background: #0b0f19; color: #f8fafc; text-align: center; }
-            h1 { font-size: 3rem; margin-bottom: 0.5rem; color: #f43f5e; }
+            h1 { font-size: 3.5rem; margin-bottom: 0.5rem; color: #f43f5e; }
             p { color: #94a3b8; font-size: 1.1rem; }
-            a { color: #6366f1; text-decoration: underline; margin-top: 1rem; display: inline-block; }
+            a { color: #6366f1; text-decoration: underline; margin-top: 1rem; display: inline-block; font-weight: 600; }
           </style>
         </head>
         <body>
           <div>
             <h1>404</h1>
-            <p>The short link you are trying to access does not exist or has expired.</p>
-            <a href="/">Go to Dashboard</a>
+            <p>Erişmeye çalıştığınız kısa bağlantı bulunamadı veya süresi doldu.</p>
+            <a href="/">Ana Sayfaya Dön</a>
           </div>
         </body>
         </html>

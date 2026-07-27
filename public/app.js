@@ -447,7 +447,7 @@ function populateDomainSelect() {
   // Always include default system domain for zero-config instant link shortening
   const defaultOpt = document.createElement('option');
   defaultOpt.value = 'default_system';
-  defaultOpt.textContent = 'System Domain (orfa.dev / localhost)';
+  defaultOpt.textContent = 'Sistem Domaini (short.orfa.dev)';
   domainSelect.appendChild(defaultOpt);
 
   state.domains.forEach(d => {
@@ -476,19 +476,19 @@ function renderDomains() {
   domainsList.innerHTML = '';
 
   if (state.domains.length === 0) {
-    domainsList.innerHTML = '<div class="text-slate-500 text-center py-6">No custom domains added yet. Add one above!</div>';
+    domainsList.innerHTML = '<div class="text-slate-500 text-center py-6">Henüz özel domain eklenmedi. Yukarıdaki formdan ekleyebilirsiniz!</div>';
     return;
   }
 
   state.domains.forEach(d => {
     const isVerified = d.verification_status === 'active' || d.verification_status === 'verified';
     const statusBadge = isVerified
-      ? '<span class="badge-active">ACTIVE</span>'
-      : '<span class="badge-pending">PENDING DNS</span>';
+      ? '<span class="badge-active">AKTİF</span>'
+      : '<span class="badge-pending">DNS BEKLENİYOR</span>';
 
     const systemTarget = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
       ? window.location.hostname
-      : 'db.orfa.dev';
+      : 'short.orfa.dev';
 
     const card = document.createElement('div');
     card.className = 'card p-5';
@@ -499,19 +499,19 @@ function renderDomains() {
           ${statusBadge}
         </div>
         <div class="flex items-center gap-2">
-          ${!isVerified ? `<button type="button" class="btn-secondary text-xs py-1 px-3" onclick="verifyDomain('${d.id}')">Verify DNS Now</button>` : ''}
-          <button type="button" class="btn-secondary text-xs text-rose-400 py-1 px-2 hover:bg-rose-950/40" onclick="deleteDomain('${d.id}')">Delete</button>
+          ${!isVerified ? `<button type="button" class="btn-secondary text-xs py-1 px-3" onclick="verifyDomain('${d.id}')">DNS Doğrula</button>` : ''}
+          <button type="button" class="btn-secondary text-xs text-rose-400 py-1 px-2 hover:bg-rose-950/40" onclick="deleteDomain('${d.id}')">Sil</button>
         </div>
       </div>
 
       <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 mt-2 font-mono text-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span class="text-indigo-400 font-bold">CNAME Record:</span> 
+            <span class="text-indigo-400 font-bold">CNAME Kaydı:</span> 
             <span class="text-slate-300">Host:</span> <code>${d.hostname}</code>
-            <span class="text-slate-300 ml-2">Target:</span> <code>${systemTarget}</code>
+            <span class="text-slate-300 ml-2">Hedef:</span> <code>${systemTarget}</code>
           </div>
-          <button type="button" class="btn-secondary text-xs py-1 px-3 whitespace-nowrap" onclick="copyText('${systemTarget}')">Copy Target</button>
+          <button type="button" class="btn-secondary text-xs py-1 px-3 whitespace-nowrap" onclick="copyText('${systemTarget}')">Hedefi Kopyala</button>
         </div>
       </div>
     `;
@@ -526,13 +526,13 @@ function renderLinks() {
   linksList.innerHTML = '';
 
   if (state.links.length === 0) {
-    linksList.innerHTML = '<div class="text-slate-500 text-center py-6">No short links created yet. Use the box above!</div>';
+    linksList.innerHTML = '<div class="text-slate-500 text-center py-6">Henüz kısa link oluşturulmadı. Yukarıdaki formu kullanabilirsiniz!</div>';
     return;
   }
 
   state.links.forEach(l => {
     const domain = state.domains.find(d => d.id === l.domain_id);
-    const hostname = domain ? domain.hostname : 'go.orfa.dev';
+    const hostname = domain ? domain.hostname : 'short.orfa.dev';
     const shortUrl = `http://${hostname}/${l.slug}`;
 
     const card = document.createElement('div');
@@ -547,19 +547,19 @@ function renderLinks() {
           <span class="text-xs font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">${l.redirect_type || 302}</span>
         </div>
         <div class="text-xs text-slate-400 truncate max-w-xl">
-          <span class="text-slate-500">Destination:</span> ${l.destination_url}
+          <span class="text-slate-500">Hedef:</span> ${l.destination_url}
         </div>
       </div>
 
       <div class="flex items-center gap-2">
         <button type="button" class="btn-secondary text-xs py-1.5 px-3" onclick="copyText('${shortUrl}')">
-          Copy Link
+          Linki Kopyala
         </button>
         <button type="button" class="btn-secondary text-xs py-1.5 px-3 text-indigo-300 hover:text-white" onclick="viewQrCode('${l.id}')">
-          QR Code
+          QR Kod
         </button>
         <button type="button" class="btn-secondary text-xs text-rose-400 py-1.5 px-2 hover:bg-rose-950/40" onclick="deleteLink('${l.id}')">
-          Delete
+          Sil
         </button>
       </div>
     `;
