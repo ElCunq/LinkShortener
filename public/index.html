@@ -404,6 +404,62 @@ curl -X DELETE https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api
               </div>
             </div>
 
+            <!-- ENDPOINT 5: ADD DOMAIN -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-amber-400 text-xs">POST /api/v1/domains</span>
+                <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px] font-mono">Domain Ekle</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Hesabınıza özel domain ekler ve DNS doğrulama CNAME/TXT verilerini döner.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X POST https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/domains \
+  -H "Authorization: Bearer sl_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"hostname":"link.sirketiniz.com"}'
+              </div>
+            </div>
+
+            <!-- ENDPOINT 6: VERIFY DOMAIN DNS -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-cyan-400 text-xs">POST /api/v1/domains/:id/verify</span>
+                <span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 text-[10px] font-mono">DNS Doğrula</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Domainin CNAME ve TXT DNS kayıtlarını canlı sorgular ve doğrulama durumunu günceller.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X POST https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/domains/dom_xyz/verify \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+              </div>
+            </div>
+
+            <!-- ENDPOINT 7: QR CODE -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-teal-400 text-xs">GET /api/v1/links/:id/qrcode</span>
+                <span class="px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 text-[10px] font-mono">QR Kod Oluştur</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Kısa link için PNG formatında QR kod Base64 Data URL çıktısı üretir.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X GET https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/links/lnk_xyz/qrcode \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+              </div>
+            </div>
+
+            <!-- ENDPOINT 8: GENERATE API KEY -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-pink-400 text-xs">POST /api/v1/api-keys</span>
+                <span class="px-2 py-0.5 rounded bg-pink-500/10 text-pink-400 text-[10px] font-mono">API Key Üret</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Programatik entegrasyonlar için canlı bir sl_live_ API key oluşturur.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X POST https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/api-keys \
+  -H "Authorization: Bearer YOUR_JWT_OR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Sunucu Entegrasyonu"}'
+              </div>
+            </div>
+
           </div>
 
         </div>

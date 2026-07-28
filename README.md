@@ -86,6 +86,38 @@ curl -X POST https://shorts.orfa.dev/api/v1/domains \
   -d '{"hostname":"link.sirketiniz.com"}'
 ```
 
+#### 4. Domain Listesini Çekme
+```bash
+curl -X GET https://shorts.orfa.dev/api/v1/domains \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+```
+
+#### 5. Domain DNS Doğrulaması Başlatma
+```bash
+curl -X POST https://shorts.orfa.dev/api/v1/domains/dom_xyz/verify \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+```
+
+#### 6. QR Kodu Üretme (Base64 PNG)
+```bash
+curl -X GET https://shorts.orfa.dev/api/v1/links/lnk_xyz/qrcode \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+```
+
+#### 7. Kısa Link Silme
+```bash
+curl -X DELETE https://shorts.orfa.dev/api/v1/links/lnk_xyz \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+```
+
+#### 8. Canlı API Key Üretme
+```bash
+curl -X POST https://shorts.orfa.dev/api/v1/api-keys \
+  -H "Authorization: Bearer YOUR_JWT_OR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Sunucu Entegrasyonu"}'
+```
+
 ---
 
 ## 📁 Proje Yapısı
