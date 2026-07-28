@@ -262,11 +262,30 @@
 
     <!-- TAB 3: CLICK ANALYTICS CONTENT -->
     <div id="analyticsTab" class="tab-content hidden">
-      <div class="mb-4">
-        <label class="block text-xs font-medium text-slate-400 mb-1">Analiz Edilecek Linki Seçin</label>
-        <select id="analyticsLinkSelect" class="input-field max-w-md bg-slate-800">
-          <!-- Dynamically populated -->
-        </select>
+      <!-- LIVE ANALYTICS HEADER CONTROL -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+        <div class="flex items-center gap-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              Canlı Tıklama & Ziyaretçi Analitiği
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">Otomatik Canlı Akış</span>
+            </h3>
+            <p class="text-xs text-slate-400">Tıklamalar ve cihaz istatistikleri anlık olarak sayfa yenilenmeden güncellenir.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="flex-1 sm:flex-initial">
+            <select id="analyticsLinkSelect" class="input-field bg-slate-950 text-xs py-2 px-3">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <button type="button" id="refreshAnalyticsBtn" onclick="refreshAnalyticsNow()" class="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5 whitespace-nowrap">
+            <svg id="refreshSpinIcon" class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Canlı Yenile</span>
+          </button>
+        </div>
       </div>
 
       <div id="analyticsContent" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -298,6 +317,98 @@
 
     <!-- TAB 4: API KEYS CONTENT -->
     <div id="apiKeysTab" class="tab-content hidden">
+      
+      <!-- EXPANDABLE REST API DOCUMENTATION -->
+      <details class="group bg-slate-900/80 border border-indigo-500/30 rounded-xl mb-6 overflow-hidden transition-all duration-200">
+        <summary class="flex items-center justify-between p-4 cursor-pointer select-none bg-slate-900/90 hover:bg-slate-800/80 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            </div>
+            <div>
+              <span class="font-bold text-sm text-white">📖 REST API Geliştirici Dokümantasyonu & Kullanım Rehberi</span>
+              <span class="ml-2 text-xs text-indigo-400 font-normal">API anahtarınızı otomasyonlarda nasıl kullanacağınızı görmek için tıklayın</span>
+            </div>
+          </div>
+          <svg class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+
+        <div class="p-5 border-t border-slate-800/80 bg-slate-950/60 space-y-5 text-xs text-slate-300">
+          
+          <!-- AUTH HEADER -->
+          <div class="space-y-2">
+            <div class="font-bold text-white text-sm flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              1. Kimlik Doğrulama (Authentication)
+            </div>
+            <p class="text-slate-400">Tüm API isteklerinizde oluşturduğunuz canlı API anahtarını (<code>sl_live_...</code>) HTTP Header içerisinde iletmelisiniz:</p>
+            <div class="bg-slate-900 p-2.5 rounded border border-slate-800 font-mono text-[11px] text-emerald-400">
+              Authorization: Bearer sl_live_hesap_anahtariniz
+            </div>
+          </div>
+
+          <!-- ENDPOINTS GRID -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- ENDPOINT 1: CREATE LINK -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-emerald-400 text-xs">POST /api/v1/links</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono">Link Kısalt</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Yeni bir kısa link üretir. Özel slug ve domain belirtilebilir.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X POST https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/links \
+  -H "Authorization: Bearer sl_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://github.com","slug":"github"}'
+              </div>
+            </div>
+
+            <!-- ENDPOINT 2: GET ANALYTICS -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-indigo-400 text-xs">GET /api/v1/links/:id/analytics</span>
+                <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 text-[10px] font-mono">İstatistikler</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Belirli bir kısa linkin canlı tıklama ve cihaz analitiğini döndürür.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X GET https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/links/lnk_xyz/analytics \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+              </div>
+            </div>
+
+            <!-- ENDPOINT 3: LIST DOMAINS -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-violet-400 text-xs">GET /api/v1/domains</span>
+                <span class="px-2 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[10px] font-mono">Domain Listesi</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Hesabınıza bağlı tüm özel domainleri ve doğrulama durumlarını listeler.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X GET https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/domains \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+              </div>
+            </div>
+
+            <!-- ENDPOINT 4: DELETE LINK -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-rose-400 text-xs">DELETE /api/v1/links/:id</span>
+                <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 text-[10px] font-mono">Link Sil</span>
+              </div>
+              <p class="text-slate-400 text-[11px]">Kısa linki ve ona bağlı tüm analitik verilerini kalıcı olarak siler.</p>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-900 font-mono text-[10px] text-slate-300 overflow-x-auto">
+curl -X DELETE https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api/v1/links/lnk_xyz \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </details>
+
       <div class="card p-6 mb-6">
         <h3 class="text-base font-bold text-white mb-2">Yeni Canlı API Anahtarı Oluştur</h3>
         <p class="text-xs text-slate-400 mb-4">Programatik link kısaltma ve otomasyonlar için güvenli API anahtarı (ör. <code>sl_live_...</code>) oluşturun.</p>

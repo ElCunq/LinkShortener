@@ -162,8 +162,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.closeAuthModal();
     updateUserHeader();
     await fetchAllData();
+    startLiveAnalyticsPolling();
   }
 });
+
+let liveAnalyticsInterval = null;
+
+function startLiveAnalyticsPolling() {
+  if (liveAnalyticsInterval) clearInterval(liveAnalyticsInterval);
+  liveAnalyticsInterval = setInterval(async () => {
+    if (state.accessToken && state.user) {
+      await fetchLinksSilently();
+    }
+  }, 5000);
+}
+
+async function fetchLinksSilently() {
+  try {
+    const freshLinks = await apiGet('/links');
+    state.links = freshLinks;
+    populateAnalyticsSelect();
+    await loadAnalyticsForSelectedLink();
+  } catch (err) {}
+}
+
+window.refreshAnalyticsNow = async () => {
+  const icon = document.getElementById('refreshSpinIcon');
+  if (icon) icon.classList.add('animate-spin');
+  try {
+    await fetchLinksSilently();
+    showToast('Analiz verileri güncellendi');
+  } catch (err) {
+    showToast(err.message, true);
+  } finally {
+    if (icon) setTimeout(() => icon.classList.remove('animate-spin'), 600);
+  }
+};
 
 function setupEventListeners() {
   // Tabs
@@ -174,7 +208,12 @@ function setupEventListeners() {
 
       const targetTab = e.currentTarget.getAttribute('data-tab');
       e.currentTarget.classList.add('active');
-      document.getElementById(targetTab).classList.remove('hidden');
+      const targetEl = document.getElementById(targetTab);
+      if (targetEl) targetEl.classList.remove('hidden');
+
+      if (targetTab === 'analyticsTab') {
+        loadAnalyticsForSelectedLink();
+      }
     });
   });
 
@@ -435,11 +474,16 @@ async function fetchAllData() {
   populateDnsGuide();
 }
 
-// Populate DNS guide placeholders with dynamic SYSTEM_DOMAIN from server config
+// Populate DNS & API guide placeholders with dynamic domains from server config
 function populateDnsGuide() {
   const sd = state.serverConfig.system_domain || window.location.hostname || 'localhost';
+  const ad = state.serverConfig.admin_domain || window.location.hostname || 'localhost';
+
   document.querySelectorAll('.dns-system-domain').forEach(el => {
     el.textContent = sd;
+  });
+  document.querySelectorAll('.dns-admin-domain').forEach(el => {
+    el.textContent = ad;
   });
 }
 
