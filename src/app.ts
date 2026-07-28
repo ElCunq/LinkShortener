@@ -11,71 +11,68 @@ import { RedirectService } from './services/redirectService';
 
 const app = express();
 
+// ─── APP_MODE: "admin" (full dashboard + API) or "shortener" (redirects only) ───
+const APP_MODE = process.env.APP_MODE || 'admin';
+
 // Trust reverse proxy headers (Cloudflare, Nginx, Traefik, Caddy)
 app.set('trust proxy', true);
 
 app.use(helmet({
-  contentSecurityPolicy: false // Allow custom domain redirects and UI inline assets
+  contentSecurityPolicy: false
 }));
 app.use(cors());
 app.use(express.json());
 
-// Serve static Web Dashboard UI from public directory
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Global Rate Limiter for security
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // Limit each IP to 500 requests per 15 minutes
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: { trustProxy: false },
-  message: { error: 'Too many requests, please try again later.' }
-});
-
-app.use('/api/', apiLimiter);
-
-// Mount REST API Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/domains', domainRoutes);
-app.use('/api/v1/links', linkRoutes);
-app.use('/api/v1/api-keys', apiKeyRoutes);
-
-// System Health Check
+// System Health Check (both modes)
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', service: 'Link Shortener API', db_host: process.env.DB_HOST || 'localhost' });
+  res.status(200).json({ status: 'ok', mode: APP_MODE, db_host: process.env.DB_HOST || 'localhost' });
 });
 
-// ─── Auto-detect domains from Coolify FQDN injection ───
-// Coolify injects SERVICE_FQDN_LINK_SHORTENER with all domains from the Domains (FQDN) field.
-// Convention: 1st domain = Admin Panel, 2nd domain = Shortener
-function parseCoolifyDomains(): { adminDomain: string; systemDomain: string } {
-  const fqdnRaw = process.env.SERVICE_FQDN_LINK_SHORTENER || '';
-  const parts = fqdnRaw.split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean);
+// ════════════════════════════════════════════════════════════
+// ADMIN MODE: Full dashboard, API endpoints, static files
+// ════════════════════════════════════════════════════════════
+if (APP_MODE === 'admin') {
+  // Serve static Web Dashboard UI
+  app.use(express.static(path.join(__dirname, '../public')));
 
-  return {
-    adminDomain: parts[0] || process.env.ADMIN_DOMAIN || 'localhost',
-    systemDomain: parts[1] || parts[0] || process.env.SYSTEM_DOMAIN || 'localhost',
-  };
+  // Rate limiter for API
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { trustProxy: false },
+    message: { error: 'Too many requests, please try again later.' }
+  });
+  app.use('/api/', apiLimiter);
+
+  // Mount REST API Routes
+  app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/domains', domainRoutes);
+  app.use('/api/v1/links', linkRoutes);
+  app.use('/api/v1/api-keys', apiKeyRoutes);
+
+  // Config endpoint: frontend reads system_domain from shortener's FQDN
+  app.get('/api/v1/config', (req: Request, res: Response) => {
+    const shortenerFqdn = (process.env.SHORTENER_FQDN || '').replace(/^https?:\/\//, '').replace(/\/$/, '').trim();
+    res.status(200).json({
+      admin_domain: req.get('host')?.split(':')[0] || 'localhost',
+      system_domain: shortenerFqdn || 'localhost',
+    });
+  });
+
+  // Root serves admin panel
+  app.get('/', (req: Request, res: Response) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+  });
 }
 
-const { adminDomain, systemDomain } = parseCoolifyDomains();
-
-// Public config endpoint for frontend dynamic domain resolution
-app.get('/api/v1/config', (req: Request, res: Response) => {
-  res.status(200).json({ admin_domain: adminDomain, system_domain: systemDomain });
-});
-
-// Root route: Admin panel ONLY on admin domain, 404 on everything else
-app.get('/', (req: Request, res: Response) => {
-  const rawHost = req.get('host') || req.headers.host || req.hostname || 'localhost';
-  const cleanHost = rawHost.split(':')[0].toLowerCase();
-
-  const isAdmin = cleanHost === adminDomain.toLowerCase() || cleanHost === 'localhost' || cleanHost === '127.0.0.1';
-
-  if (isAdmin) {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-  } else {
+// ════════════════════════════════════════════════════════════
+// SHORTENER MODE: Only redirects, root returns 404
+// ════════════════════════════════════════════════════════════
+if (APP_MODE === 'shortener') {
+  // Root returns clean 404 — admin panel is NEVER exposed
+  app.get('/', (req: Request, res: Response) => {
     res.status(404).send(`
       <!DOCTYPE html>
       <html lang="tr">
@@ -96,10 +93,12 @@ app.get('/', (req: Request, res: Response) => {
       </body>
       </html>
     `);
-  }
-});
+  });
+}
 
-// Short Link Wildcard Redirect Service Router (Catch-all for custom domains and short URLs)
+// ════════════════════════════════════════════════════════════
+// REDIRECT ENGINE (both modes)
+// ════════════════════════════════════════════════════════════
 app.get('/:slug', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const rawSlug = req.params.slug;
@@ -138,14 +137,12 @@ app.get('/:slug', async (req: Request, res: Response, next: NextFunction): Promi
             body { font-family: system-ui, sans-serif; display: grid; place-content: center; height: 100vh; margin: 0; background: #0b0f19; color: #f8fafc; text-align: center; }
             h1 { font-size: 3.5rem; margin-bottom: 0.5rem; color: #f43f5e; }
             p { color: #94a3b8; font-size: 1.1rem; }
-            a { color: #6366f1; text-decoration: underline; margin-top: 1rem; display: inline-block; font-weight: 600; }
           </style>
         </head>
         <body>
           <div>
             <h1>404</h1>
             <p>Erişmeye çalıştığınız kısa bağlantı bulunamadı veya süresi doldu.</p>
-            <a href="/">Ana Sayfaya Dön</a>
           </div>
         </body>
         </html>
@@ -153,7 +150,6 @@ app.get('/:slug', async (req: Request, res: Response, next: NextFunction): Promi
       return;
     }
 
-    // Perform HTTP 301 or 302 redirect
     res.redirect(redirectResult.redirectType, redirectResult.destinationUrl);
   } catch (err) {
     console.error('Redirect error:', err);
@@ -161,7 +157,7 @@ app.get('/:slug', async (req: Request, res: Response, next: NextFunction): Promi
   }
 });
 
-// Fallback 404 handler for unmatched routes
+// Fallback 404
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });

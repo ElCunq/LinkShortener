@@ -1,19 +1,53 @@
 version: '3.8'
 
 services:
-  link-shortener:
+  admin-panel:
     build:
       context: .
       dockerfile: Dockerfile
       cache_from:
-        - link-shortener-app:latest
-    container_name: link-shortener-app
+        - link-shortener-admin:latest
+    container_name: link-shortener-admin
     restart: always
     expose:
       - "3000"
     environment:
       - PORT=3000
-      - NODE_ENV=production
+      - APP_MODE=admin
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-postgres}
+      - DB_SSL=${DB_SSL:-false}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    labels:
+      - "coolify.managed=true"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  shortener-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - link-shortener-engine:latest
+    container_name: link-shortener-engine
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - PORT=3000
+      - APP_MODE=shortener
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}
