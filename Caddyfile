@@ -1,8 +1,6 @@
 {
     on_demand_tls {
         ask http://admin-panel:3000/internal/domain-check
-        interval 2m
-        burst 10
     }
 }
 
