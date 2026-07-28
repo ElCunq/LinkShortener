@@ -81,9 +81,11 @@ services:
       dockerfile: Dockerfile.caddy
     container_name: link-shortener-caddy
     restart: always
-    ports:
-      - "80:80"
-      - "443:443"
+    expose:
+      - "80"
+      - "443"
+    labels:
+      - "coolify.managed=true"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
