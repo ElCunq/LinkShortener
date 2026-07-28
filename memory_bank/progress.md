@@ -37,6 +37,7 @@
 - [x] **Live Stream Click Analytics**: Implemented 5-second background polling stream (`startLiveAnalyticsPolling()`) and 1-click manual refresh button in `app.js`.
 - [x] **Cascade Deletion Fix**: Updated `supabaseService.ts` and `dataService.ts` to delete child `click_events` and `short_links` before deleting parent rows, eliminating PostgreSQL FK 500 errors.
 - [x] **UI Modal Mappings**: Fixed element ID mappings for QR Code Modal (`qrImageDisplay`) and API Key Modal (`newApiKeyInput`), enabling 1-click API Key display & clipboard copy.
-- [x] **Domain Reset Fix on Deploy**: Added `SYSTEM_DOMAIN` to `docker-compose.yml` and `/api/v1/config` fallback resolution, ensuring short link URLs render cleanly as `go.orfa.dev/slug` instead of `localhost`.
-- [x] **Analytics Webhook & Polling Optimization**: Removed continuous 5s polling interval; analytics updates on demand (tab switch, dropdown change, manual button click) and via Supabase Database Webhooks (`POST /api/v1/webhooks/clicks`).
+- [x] **CNAME Custom Domain 404 Routing Fix**: Added global slug fallback in `findLinkByDomainAndSlug` across `supabaseService.ts` and `dataService.ts`, ensuring custom CNAME domains (e.g., `orfadev.com/git` -> `go.orfa.dev` or `shorts.orfa.dev`) resolve and redirect short links cleanly without 404 errors.
+- [x] **Fast Batch Deletion**: Replaced sequential HTTP loop in `deleteDomain` with a single batch `in(...)` subquery, preventing network thread blocking during deletion.
+- [x] **Script Cache Buster**: Updated `index.html` script tag to `/app.js?v=1.0.2` to ensure browser HTTP caches immediately load fresh non-polling JavaScript.
 - [x] **Full Integration Test Suite**: All 19 integration tests passing cleanly (`npm test`).
