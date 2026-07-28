@@ -3,6 +3,7 @@ import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { DataService } from '../services/dataService';
 import { SecurityService } from '../services/securityService';
 import { DnsService } from '../services/dnsService';
+import { TraefikService } from '../services/traefikService';
 
 const router = Router();
 
@@ -105,6 +106,7 @@ router.post('/:id/verify', async (req: AuthenticatedRequest, res: Response): Pro
 
     if (verificationResult.verified) {
       const updated = await DataService.updateDomainStatus(domain.id, 'active', 'active');
+      TraefikService.syncDomain(domain.hostname);
       res.status(200).json({
         id: updated?.id,
         hostname: updated?.hostname,
@@ -138,6 +140,8 @@ router.delete('/:id', async (req: AuthenticatedRequest, res: Response): Promise<
       res.status(404).json({ error: 'Domain not found or unauthorized' });
       return;
     }
+
+    TraefikService.removeDomain(domain.hostname);
 
     const deleted = await DataService.deleteDomain(id);
     if (!deleted) {
