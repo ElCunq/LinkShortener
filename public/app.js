@@ -552,9 +552,9 @@ function renderDomains() {
       ? '<span class="badge-active">AKTİF</span>'
       : '<span class="badge-pending">DNS BEKLENİYOR</span>';
 
-    const systemTarget = (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-      ? window.location.hostname
-      : state.serverConfig.system_domain;
+    const systemTarget = state.serverConfig.system_domain && state.serverConfig.system_domain !== 'localhost'
+      ? state.serverConfig.system_domain
+      : window.location.hostname;
 
     const card = document.createElement('div');
     card.className = 'card p-5';

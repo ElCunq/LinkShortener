@@ -6,7 +6,8 @@ import { DnsService } from '../services/dnsService';
 
 const router = Router();
 
-const CNAME_TARGET = process.env.CNAME_TARGET || 'domains.shortlink-service.com';
+const rawFqdn = process.env.SYSTEM_DOMAIN || process.env.SHORTENER_FQDN || process.env.SERVICE_FQDN_SHORTENER_ENGINE || process.env.CNAME_TARGET || '';
+const CNAME_TARGET = rawFqdn.split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean)[0] || 'go.orfa.dev';
 
 // Require authentication for all domain management endpoints
 router.use(authenticateToken);
