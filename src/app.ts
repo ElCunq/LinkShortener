@@ -73,24 +73,30 @@ if (APP_MODE === 'admin') {
 // SHORTENER MODE: Only redirects, root returns 404
 // ════════════════════════════════════════════════════════════
 if (APP_MODE === 'shortener') {
-  // Root returns clean 404 — admin panel is NEVER exposed
+  // Root handler: If root URL (without slug) is visited, redirect to admin domain or display helpful service info
   app.get('/', (req: Request, res: Response) => {
-    res.status(404).send(`
+    const adminFqdn = process.env.ADMIN_DOMAIN || process.env.SERVICE_FQDN_ADMIN_PANEL || '';
+    const cleanAdmin = adminFqdn.replace(/^https?:\/\//, '').replace(/\/$/, '').split(',')[0].trim();
+    if (cleanAdmin && cleanAdmin !== 'localhost') {
+      res.redirect(302, `https://${cleanAdmin}`);
+      return;
+    }
+    res.status(200).send(`
       <!DOCTYPE html>
       <html lang="tr">
       <head>
         <meta charset="UTF-8">
-        <title>404 - Bulunamadı</title>
+        <title>Link Kısaltma Servisi</title>
         <style>
-          body { font-family: system-ui, sans-serif; display: grid; place-content: center; height: 100vh; margin: 0; background: #0b0f19; color: #64748b; text-align: center; }
-          h1 { font-size: 3.5rem; margin-bottom: 0.5rem; color: #334155; }
-          p { color: #64748b; font-size: 1.1rem; }
+          body { font-family: system-ui, sans-serif; display: grid; place-content: center; height: 100vh; margin: 0; background: #0b0f19; color: #f8fafc; text-align: center; }
+          h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: #3b82f6; }
+          p { color: #94a3b8; font-size: 1.1rem; }
         </style>
       </head>
       <body>
         <div>
-          <h1>404</h1>
-          <p>İstenen sayfa veya bağlantı bulunamadı.</p>
+          <h1>Link Kısaltma Servisi</h1>
+          <p>Yönlendirilecek geçerli bir kısa bağlantı adresi giriniz (örnek: /slug).</p>
         </div>
       </body>
       </html>

@@ -155,22 +155,24 @@ describe('Link Shortener API & Service Test Suite', () => {
     });
   });
 
+  let createdSlug = `github_${Date.now()}`;
+
   describe('5. Short Link Management Endpoints', () => {
-    test('POST /api/v1/links - creates a short link with custom slug github', async () => {
+    test('POST /api/v1/links - creates a short link with custom slug', async () => {
       const res = await request(app)
         .post('/api/v1/links')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           domain_id: domainId,
           destination_url: 'https://github.com/torvalds/linux',
-          custom_slug: 'github',
+          custom_slug: createdSlug,
           redirect_type: 302
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.slug).toBe('github');
+      expect(res.body.slug).toBe(createdSlug);
       expect(res.body.destination_url).toBe('https://github.com/torvalds/linux');
-      expect(res.body.short_url).toContain(`://${testHost}/github`);
+      expect(res.body.short_url).toContain(`://${testHost}/${createdSlug}`);
 
       linkId = res.body.id;
     });
@@ -182,7 +184,7 @@ describe('Link Shortener API & Service Test Suite', () => {
         .send({
           domain_id: domainId,
           destination_url: 'https://example.com',
-          custom_slug: 'github'
+          custom_slug: createdSlug
         });
 
       expect(res.status).toBe(409);
@@ -203,9 +205,9 @@ describe('Link Shortener API & Service Test Suite', () => {
   });
 
   describe('6. Redirect Engine & Click Analytics', () => {
-    test('GET /github with Host redirects with 302', async () => {
+    test('GET /:slug with Host redirects with 302', async () => {
       const res = await request(app)
-        .get('/github')
+        .get(`/${createdSlug}`)
         .set('Host', testHost)
         .set('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
         .set('Referer', 'https://twitter.com');
