@@ -8,7 +8,7 @@ let state = {
   domains: [],
   links: [],
   apiKeys: [],
-  serverConfig: { system_domain: window.location.hostname || 'localhost', admin_domains: [] }
+  serverConfig: { admin_domain: window.location.hostname || 'localhost', system_domain: window.location.hostname || 'localhost' }
 };
 
 // DOM Elements

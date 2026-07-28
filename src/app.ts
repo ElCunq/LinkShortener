@@ -49,27 +49,24 @@ app.get('/health', (req: Request, res: Response) => {
 // Public config endpoint for frontend dynamic domain resolution
 app.get('/api/v1/config', (req: Request, res: Response) => {
   res.status(200).json({
+    admin_domain: process.env.ADMIN_DOMAIN || 'localhost',
     system_domain: process.env.SYSTEM_DOMAIN || 'localhost',
-    admin_domains: (process.env.ADMIN_DOMAINS || 'localhost,127.0.0.1').split(',').map(d => d.trim()),
   });
 });
 
-// Explicit root route for Web Dashboard UI with Shlink-Style Domain Isolation Security
+// Root route: Admin panel ONLY on ADMIN_DOMAIN, 404 on everything else (Shlink-style isolation)
 app.get('/', (req: Request, res: Response) => {
   const rawHost = req.get('host') || req.headers.host || req.hostname || 'localhost';
   const cleanHost = rawHost.split(':')[0].toLowerCase();
-  const configuredAdminDomains = (process.env.ADMIN_DOMAINS || 'localhost,127.0.0.1').toLowerCase().split(',');
+  const adminDomain = (process.env.ADMIN_DOMAIN || 'localhost').toLowerCase().trim();
 
-  // Strictly check if current host is in authorized Admin / Dashboard domains list
-  const isAdminDomain = configuredAdminDomains.some(d => {
-    const trimmed = d.trim();
-    return trimmed.length > 0 && (cleanHost === trimmed || cleanHost.includes(trimmed));
-  });
+  // localhost and 127.0.0.1 are always allowed for development
+  const isAdmin = cleanHost === adminDomain || cleanHost === 'localhost' || cleanHost === '127.0.0.1';
 
-  if (isAdminDomain) {
+  if (isAdmin) {
     res.sendFile(path.join(__dirname, '../public/index.html'));
   } else {
-    // Shlink Privacy & Security Model: Shortener domains (go.orfa.dev, etc.) entered empty return 404 and NEVER expose admin portal
+    // Shortener domains return a clean 404 and NEVER expose admin portal
     res.status(404).send(`
       <!DOCTYPE html>
       <html lang="tr">

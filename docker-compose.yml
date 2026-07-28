@@ -26,8 +26,11 @@ services:
       - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      # === DOMAIN AYARLARI (Sadece bu 2 değişkeni ayarlamanız yeterli) ===
+      # ADMIN_DOMAIN  = Yönetim paneli domaini (Örn: panel.sirket.com)
+      # SYSTEM_DOMAIN = Kısaltma domaini (Örn: go.sirket.com)
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN}
       - SYSTEM_DOMAIN=${SYSTEM_DOMAIN}
-      - ADMIN_DOMAINS=${ADMIN_DOMAINS}
     labels:
       - "coolify.managed=true"
     healthcheck:
