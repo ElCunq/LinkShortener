@@ -233,6 +233,13 @@ export class DataService {
     if (isSupabaseMode()) {
       return await SupabaseService.deleteDomain(id);
     } else if (isDbLive()) {
+      try {
+        await pool.query(
+          `DELETE FROM click_events WHERE short_link_id IN (SELECT id FROM short_links WHERE domain_id = $1)`,
+          [id]
+        );
+        await pool.query(`DELETE FROM short_links WHERE domain_id = $1`, [id]);
+      } catch (e) {}
       const res = await pool.query(`DELETE FROM domains WHERE id = $1`, [id]);
       return (res.rowCount || 0) > 0;
     } else {
@@ -351,6 +358,9 @@ export class DataService {
     if (isSupabaseMode()) {
       return await SupabaseService.deleteShortLink(id);
     } else if (isDbLive()) {
+      try {
+        await pool.query(`DELETE FROM click_events WHERE short_link_id = $1`, [id]);
+      } catch (e) {}
       const res = await pool.query(`DELETE FROM short_links WHERE id = $1`, [id]);
       return (res.rowCount || 0) > 0;
     } else {

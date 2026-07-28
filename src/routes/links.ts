@@ -170,12 +170,16 @@ router.delete('/:id', async (req: AuthenticatedRequest, res: Response): Promise<
       return;
     }
 
-    const domain = await DataService.findDomainById(link.domain_id);
     await DataService.deleteShortLink(link.id);
 
-    if (domain) {
-      RedirectService.invalidateCache(domain.hostname, link.slug);
-    }
+    try {
+      if (link.domain_id) {
+        const domain = await DataService.findDomainById(link.domain_id);
+        if (domain && domain.hostname) {
+          RedirectService.invalidateCache(domain.hostname, link.slug);
+        }
+      }
+    } catch (e) {}
 
     res.status(200).json({ message: 'Short link deleted successfully' });
   } catch (err: any) {
