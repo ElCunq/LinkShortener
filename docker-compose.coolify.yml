@@ -6,15 +6,15 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: link-shortener-admin
-    restart: unless-stopped
+    restart: always
     expose:
       - "3000"
     environment:
       - PORT=3000
       - APP_MODE=admin
-      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.example.com}
-      - SHORTENER_FQDN=${SHORTENER_FQDN:-go.example.com}
-      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-admin.example.com}
+      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
+      - SHORTENER_FQDN=${SHORTENER_FQDN:-go.orfa.dev}
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-shorts.orfa.dev}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}
@@ -27,6 +27,8 @@ services:
       - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    labels:
+      - "coolify.managed=true"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -39,15 +41,15 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: link-shortener-engine
-    restart: unless-stopped
+    restart: always
     expose:
       - "3000"
     environment:
       - PORT=3000
       - APP_MODE=shortener
-      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.example.com}
-      - SHORTENER_FQDN=${SHORTENER_FQDN:-go.example.com}
-      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-admin.example.com}
+      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
+      - SHORTENER_FQDN=${SHORTENER_FQDN:-go.orfa.dev}
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-shorts.orfa.dev}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}
@@ -60,29 +62,11 @@ services:
       - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    labels:
+      - "coolify.managed=true"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
-
-  caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile.caddy
-    container_name: link-shortener-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - admin-panel
-      - shortener-engine
-
-volumes:
-  caddy_data:
-  caddy_config:
