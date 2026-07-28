@@ -46,7 +46,6 @@ router.get('/', async (req: AuthenticatedRequest, res: Response): Promise<void> 
 router.delete('/:id', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const apiKey = await DataService.findApiKeyByHash(id); // Check or list keys
     const deleted = await DataService.deleteApiKey(id);
     if (!deleted) {
       res.status(404).json({ error: 'API key not found or unauthorized' });

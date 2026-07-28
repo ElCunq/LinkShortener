@@ -105,13 +105,22 @@ export class SupabaseService {
 
   static async deleteDomain(id: string): Promise<boolean> {
     try {
-      // 1. Delete associated short links first to satisfy FK constraint
+      // 1. Delete associated click_events for all short links in this domain
+      const links = await supabaseFetch<ShortLink[]>(`/short_links?domain_id=eq.${encodeURIComponent(id)}&select=id`);
+      for (const l of links) {
+        try {
+          await supabaseFetch(`/click_events?short_link_id=eq.${encodeURIComponent(l.id)}`, {
+            method: 'DELETE'
+          });
+        } catch {}
+      }
+      // 2. Delete short links for this domain
       await supabaseFetch(`/short_links?domain_id=eq.${encodeURIComponent(id)}`, {
         method: 'DELETE'
       });
     } catch {}
 
-    // 2. Delete the domain
+    // 3. Delete the domain
     await supabaseFetch(`/domains?id=eq.${encodeURIComponent(id)}`, {
       method: 'DELETE'
     });
@@ -166,6 +175,13 @@ export class SupabaseService {
   }
 
   static async deleteShortLink(id: string): Promise<boolean> {
+    try {
+      // Delete associated click_events first to satisfy FK constraint
+      await supabaseFetch(`/click_events?short_link_id=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    } catch {}
+
     await supabaseFetch(`/short_links?id=eq.${encodeURIComponent(id)}`, {
       method: 'DELETE'
     });
