@@ -39,5 +39,5 @@
 - [x] **UI Modal Mappings**: Fixed element ID mappings for QR Code Modal (`qrImageDisplay`) and API Key Modal (`newApiKeyInput`), enabling 1-click API Key display & clipboard copy.
 - [x] **CNAME Custom Domain 404 Routing Fix**: Added global slug fallback in `findLinkByDomainAndSlug` across `supabaseService.ts` and `dataService.ts`, ensuring custom CNAME domains (e.g., `orfadev.com/git` -> `go.orfa.dev` or `shorts.orfa.dev`) resolve and redirect short links cleanly without 404 errors.
 - [x] **Fast Batch Deletion**: Replaced sequential HTTP loop in `deleteDomain` with a single batch `in(...)` subquery, preventing network thread blocking during deletion.
-- [x] **Dual Compose Distribution**: Set default `docker-compose.yml` to internal expose mode (preventing Coolify Traefik port 80 allocation collision) and created `docker-compose.standalone.yml` (binding host ports 80 & 443 for turnkey client VPS handover).
+- [x] **Complete REST API Documentation**: Updated web dashboard accordion (`index.html`) and `README.md` with full cURL examples for all 8 API endpoints (Auth, Domains, Links, Analytics, QR Codes, and API Key generation).
 - [x] **Full Integration Test Suite**: All 19 integration tests passing cleanly (`npm test`).
