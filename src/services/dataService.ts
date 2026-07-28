@@ -305,27 +305,66 @@ export class DataService {
          WHERE d.hostname = $1 AND l.slug = $2 AND l.is_active = TRUE`,
         [cleanHost, slug]
       );
-      if (res.rows.length === 0) return null;
-      const row = res.rows[0];
+      if (res.rows.length > 0) {
+        const row = res.rows[0];
+        return {
+          link: row,
+          domain: {
+            id: row.domain_id,
+            user_id: row.user_id,
+            hostname: row.hostname,
+            verification_token: '',
+            verification_status: row.verification_status,
+            ssl_status: row.ssl_status,
+            created_at: row.created_at
+          }
+        };
+      }
+
+      // Fallback: search by slug across all active links for CNAME custom domains
+      const fallbackRes = await pool.query(
+        `SELECT * FROM short_links WHERE slug = $1 AND is_active = TRUE`,
+        [slug]
+      );
+      if (fallbackRes.rows.length === 0) return null;
+      const foundLink = fallbackRes.rows[0];
       return {
-        link: row,
+        link: foundLink,
         domain: {
-          id: row.domain_id,
-          user_id: row.user_id,
-          hostname: row.hostname,
+          id: foundLink.domain_id,
+          user_id: foundLink.user_id,
+          hostname: cleanHost,
           verification_token: '',
-          verification_status: row.verification_status,
-          ssl_status: row.ssl_status,
-          created_at: row.created_at
+          verification_status: 'active',
+          ssl_status: 'active',
+          created_at: foundLink.created_at
         }
       };
     } else {
       const domain = await this.findDomainByHostname(cleanHost);
-      if (!domain) return null;
+      if (domain) {
+        for (const l of memoryDb.shortLinks.values()) {
+          if (l.domain_id === domain.id && l.slug === slug && l.is_active) {
+            return { link: l, domain };
+          }
+        }
+      }
 
+      // Memory fallback: search by slug across all active links
       for (const l of memoryDb.shortLinks.values()) {
-        if (l.domain_id === domain.id && l.slug === slug && l.is_active) {
-          return { link: l, domain };
+        if (l.slug === slug && l.is_active) {
+          return {
+            link: l,
+            domain: domain || {
+              id: l.domain_id,
+              user_id: l.user_id,
+              hostname: cleanHost,
+              verification_token: '',
+              verification_status: 'active',
+              ssl_status: 'active',
+              created_at: l.created_at
+            }
+          };
         }
       }
       return null;

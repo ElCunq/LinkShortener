@@ -111,23 +111,21 @@ export class SupabaseService {
 
   static async deleteDomain(id: string): Promise<boolean> {
     try {
-      // 1. Delete associated click_events for all short links in this domain
-      const links = await supabaseFetch<ShortLink[]>(`/short_links?domain_id=eq.${encodeURIComponent(id)}&select=id`);
-      for (const l of links) {
-        try {
-          await supabaseFetch(`/click_events?short_link_id=eq.${encodeURIComponent(l.id)}`, {
-            method: 'DELETE'
-          });
-        } catch {}
-      }
+      // 1. Delete associated click_events for short links in this domain
+      await supabaseFetch(`/click_events?short_link_id=in.(select id from short_links where domain_id=eq.${encodeURIComponent(id)})`, {
+        method: 'DELETE'
+      });
+    } catch {}
+
+    try {
       // 2. Delete short links for this domain
       await supabaseFetch(`/short_links?domain_id=eq.${encodeURIComponent(id)}`, {
         method: 'DELETE'
       });
     } catch {}
 
-    // 3. Delete the domain
     try {
+      // 3. Delete the domain
       await supabaseFetch(`/domains?id=eq.${encodeURIComponent(id)}`, {
         method: 'DELETE'
       });
@@ -146,31 +144,33 @@ export class SupabaseService {
   }
 
   static async findLinkByDomainAndSlug(hostname: string, slug: string): Promise<{ link: ShortLink; domain: Domain } | null> {
-    let domain = await this.findDomainByHostname(hostname);
-    if (!domain) {
-      // Fallback: search for link by slug across all active links
-      const links = await supabaseFetch<ShortLink[]>(`/short_links?slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=*`);
-      if (links.length === 0) return null;
-      const foundLink = links[0];
-      const linkDomain = await this.findDomainById(foundLink.domain_id);
-      return {
-        link: foundLink,
-        domain: linkDomain || {
-          id: foundLink.domain_id,
-          user_id: foundLink.user_id,
-          hostname: hostname,
-          verification_token: '',
-          verification_status: 'active',
-          ssl_status: 'active',
-          created_at: foundLink.created_at
-        }
-      };
+    const cleanHost = hostname.split(':')[0].toLowerCase();
+    let domain = await this.findDomainByHostname(cleanHost);
+
+    if (domain) {
+      const links = await supabaseFetch<ShortLink[]>(`/short_links?domain_id=eq.${encodeURIComponent(domain.id)}&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=*`);
+      if (links.length > 0) {
+        return { link: links[0], domain };
+      }
     }
 
-    const links = await supabaseFetch<ShortLink[]>(`/short_links?domain_id=eq.${encodeURIComponent(domain.id)}&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=*`);
-    if (links.length === 0) return null;
-
-    return { link: links[0], domain };
+    // Fallback: search for link by slug across all active links (supports custom CNAME domains and default system domain)
+    const fallbackLinks = await supabaseFetch<ShortLink[]>(`/short_links?slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=*`);
+    if (fallbackLinks.length === 0) return null;
+    const foundLink = fallbackLinks[0];
+    const linkDomain = await this.findDomainById(foundLink.domain_id);
+    return {
+      link: foundLink,
+      domain: linkDomain || {
+        id: foundLink.domain_id,
+        user_id: foundLink.user_id,
+        hostname: cleanHost,
+        verification_token: '',
+        verification_status: 'active',
+        ssl_status: 'active',
+        created_at: foundLink.created_at
+      }
+    };
   }
 
   static async createShortLink(link: ShortLink): Promise<ShortLink> {
