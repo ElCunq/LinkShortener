@@ -466,12 +466,15 @@ curl -X DELETE https://<span class="dns-admin-domain">shorts.orfa.dev</span>/api
         <p class="text-xs text-rose-400 font-semibold">ÖNEMLİ: Bu anahtarı şimdi kopyalayın! Güvenlik nedeniyle bir daha gösterilmeyecektir.</p>
       </div>
 
-      <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-indigo-300 break-all mb-4" id="newApiKeyDisplay">
-        <!-- Key -->
+      <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-center justify-between mb-4">
+        <input type="text" id="newApiKeyInput" readonly class="bg-transparent border-none text-indigo-300 font-mono text-xs w-full focus:outline-none select-all" value="" placeholder="sl_live_...">
       </div>
 
       <div class="flex justify-end gap-3">
-        <button type="button" id="copyApiKeyBtn" class="btn-primary">API Key'i Kopyala</button>
+        <button type="button" id="copyApiKeyBtn" class="btn-primary flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+          <span id="copyApiKeyBtnText">API Key'i Kopyala</span>
+        </button>
         <button type="button" onclick="closeApiKeyModal()" class="btn-secondary">Kapat</button>
       </div>
     </div>
