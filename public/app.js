@@ -162,20 +162,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.closeAuthModal();
     updateUserHeader();
     await fetchAllData();
-    startLiveAnalyticsPolling();
   }
 });
-
-let liveAnalyticsInterval = null;
-
-function startLiveAnalyticsPolling() {
-  if (liveAnalyticsInterval) clearInterval(liveAnalyticsInterval);
-  liveAnalyticsInterval = setInterval(async () => {
-    if (state.accessToken && state.user) {
-      await fetchLinksSilently();
-    }
-  }, 5000);
-}
 
 async function fetchLinksSilently() {
   try {

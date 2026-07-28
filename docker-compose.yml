@@ -14,6 +14,8 @@ services:
     environment:
       - PORT=3000
       - APP_MODE=admin
+      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
+      - SHORTENER_FQDN=${SHORTENER_FQDN:-go.orfa.dev}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}
@@ -48,6 +50,8 @@ services:
     environment:
       - PORT=3000
       - APP_MODE=shortener
+      - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
+      - SHORTENER_FQDN=${SHORTENER_FQDN:-go.orfa.dev}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}

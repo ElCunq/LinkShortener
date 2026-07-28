@@ -52,12 +52,14 @@ if (APP_MODE === 'admin') {
   app.use('/api/v1/links', linkRoutes);
   app.use('/api/v1/api-keys', apiKeyRoutes);
 
-  // Config endpoint: frontend reads system_domain from shortener's FQDN
+  // Config endpoint: frontend reads system_domain from shortener's domain
   app.get('/api/v1/config', (req: Request, res: Response) => {
-    const shortenerFqdn = (process.env.SHORTENER_FQDN || '').replace(/^https?:\/\//, '').replace(/\/$/, '').trim();
+    const rawShortener = process.env.SYSTEM_DOMAIN || process.env.SHORTENER_FQDN || process.env.SERVICE_FQDN_SHORTENER_ENGINE || process.env.SERVICE_FQDN_LINK_SHORTENER || '';
+    const cleanShortener = rawShortener.split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean)[0];
+
     res.status(200).json({
       admin_domain: req.get('host')?.split(':')[0] || 'localhost',
-      system_domain: shortenerFqdn || 'localhost',
+      system_domain: cleanShortener || 'localhost',
     });
   });
 

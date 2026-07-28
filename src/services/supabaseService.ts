@@ -127,9 +127,11 @@ export class SupabaseService {
     } catch {}
 
     // 3. Delete the domain
-    await supabaseFetch(`/domains?id=eq.${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    });
+    try {
+      await supabaseFetch(`/domains?id=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {}
     return true;
   }
 
@@ -188,9 +190,11 @@ export class SupabaseService {
       });
     } catch {}
 
-    await supabaseFetch(`/short_links?id=eq.${encodeURIComponent(id)}`, {
-      method: 'DELETE'
-    });
+    try {
+      await supabaseFetch(`/short_links?id=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {}
     return true;
   }
 
