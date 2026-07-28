@@ -39,5 +39,5 @@
 - [x] **UI Modal Mappings**: Fixed element ID mappings for QR Code Modal (`qrImageDisplay`) and API Key Modal (`newApiKeyInput`), enabling 1-click API Key display & clipboard copy.
 - [x] **CNAME Custom Domain 404 Routing Fix**: Added global slug fallback in `findLinkByDomainAndSlug` across `supabaseService.ts` and `dataService.ts`, ensuring custom CNAME domains (e.g., `orfadev.com/git` -> `go.orfa.dev` or `shorts.orfa.dev`) resolve and redirect short links cleanly without 404 errors.
 - [x] **Fast Batch Deletion**: Replaced sequential HTTP loop in `deleteDomain` with a single batch `in(...)` subquery, preventing network thread blocking during deletion.
-- [x] **Complete REST API Documentation**: Updated web dashboard accordion (`index.html`) and `README.md` with full cURL examples for all 8 API endpoints (Auth, Domains, Links, Analytics, QR Codes, and API Key generation).
+- [x] **Coolify Traefik CNAME Catch-All Forwarding**: Added `HostRegexp` rules (`traefik.http.routers.shortener-catchall.rule=HostRegexp('{host:.+}')`) to `docker-compose.yml`, forcing Coolify's Traefik reverse proxy to automatically route ALL custom domain CNAMEs directly to `shortener-engine` without manual FQDN entry in Coolify.
 - [x] **Full Integration Test Suite**: All 19 integration tests passing cleanly (`npm test`).
