@@ -372,10 +372,10 @@
       <button type="button" onclick="closeQrModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold p-1 cursor-pointer">&times;</button>
 
       <h3 class="text-lg font-bold text-white mb-1">QR Kod Yönlendirme</h3>
-      <p class="text-xs text-slate-400 mb-4" id="qrModalSubtext">Kısaltılmış link için oluşturulan QR Kod</p>
+      <p class="text-xs text-slate-400 mb-4 truncate font-mono" id="qrUrlDisplay">Kısaltılmış link için oluşturulan QR Kod</p>
 
       <div class="bg-white p-4 rounded-xl shadow-inner inline-block mb-4">
-        <img id="qrCodeImage" src="" alt="QR Code" class="w-48 h-48 mx-auto">
+        <img id="qrImageDisplay" src="" alt="QR Code" class="w-48 h-48 mx-auto">
       </div>
 
       <div class="flex justify-center gap-3">

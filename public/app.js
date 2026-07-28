@@ -316,10 +316,12 @@ async function apiGet(path) {
     localStorage.removeItem('ls_access_token');
     state.accessToken = '';
     window.openAuthModal();
-    throw new Error('Session expired. Please sign in.');
+    throw new Error('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
   }
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.verification_message || data.message || 'API Request failed');
+  const text = await res.text();
+  let data = {};
+  try { if (text) data = JSON.parse(text); } catch (e) {}
+  if (!res.ok) throw new Error(data.error || data.verification_message || data.message || 'API İsteği başarısız oldu');
   return data;
 }
 
@@ -336,10 +338,12 @@ async function apiPost(path, body) {
     localStorage.removeItem('ls_access_token');
     state.accessToken = '';
     window.openAuthModal();
-    throw new Error('Session expired. Please sign in.');
+    throw new Error('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
   }
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.verification_message || data.message || 'API Request failed');
+  const text = await res.text();
+  let data = {};
+  try { if (text) data = JSON.parse(text); } catch (e) {}
+  if (!res.ok) throw new Error(data.error || data.verification_message || data.message || 'API İsteği başarısız oldu');
   return data;
 }
 
@@ -352,10 +356,12 @@ async function apiDelete(path) {
     localStorage.removeItem('ls_access_token');
     state.accessToken = '';
     window.openAuthModal();
-    throw new Error('Session expired. Please sign in.');
+    throw new Error('Oturum süresi doldu. Lütfen tekrar giriş yapın.');
   }
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || data.verification_message || data.message || 'API Request failed');
+  const text = await res.text();
+  let data = {};
+  try { if (text) data = JSON.parse(text); } catch (e) {}
+  if (!res.ok) throw new Error(data.error || data.verification_message || data.message || 'API İsteği başarısız oldu');
   return data;
 }
 
@@ -692,33 +698,34 @@ window.verifyDomain = async (id) => {
 };
 
 window.deleteDomain = async (id) => {
-  if (!confirm('Are you sure you want to delete this domain?')) return;
+  if (!confirm('Bu domaini silmek istediğinize emin misiniz?')) return;
   try {
     await apiDelete(`/domains/${id}`);
     await fetchDomains();
-    showToast('Domain deleted');
+    await fetchLinks();
+    showToast('Domain ve bağlı linkler başarıyla silindi');
   } catch (err) {
     showToast(err.message, true);
   }
 };
 
 window.deleteLink = async (id) => {
-  if (!confirm('Are you sure you want to delete this link?')) return;
+  if (!confirm('Bu kısa linki silmek istediğinize emin misiniz?')) return;
   try {
     await apiDelete(`/links/${id}`);
     await fetchLinks();
-    showToast('Link deleted');
+    showToast('Kısa link başarıyla silindi');
   } catch (err) {
     showToast(err.message, true);
   }
 };
 
 window.deleteApiKey = async (id) => {
-  if (!confirm('Are you sure you want to revoke this API key?')) return;
+  if (!confirm('Bu API anahtarını iptal etmek istediğinize emin misiniz?')) return;
   try {
     await apiDelete(`/api-keys/${id}`);
     await fetchApiKeys();
-    showToast('API key revoked');
+    showToast('API anahtarı iptal edildi');
   } catch (err) {
     showToast(err.message, true);
   }
