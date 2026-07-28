@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const CNAME_TARGET = process.env.SYSTEM_DOMAIN || process.env.CNAME_TARGET || 'localhost';
+const fqdnParts = (process.env.SERVICE_FQDN_LINK_SHORTENER || '').split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean);
+const CNAME_TARGET = fqdnParts[1] || fqdnParts[0] || process.env.SYSTEM_DOMAIN || 'localhost';
 
 const resolver = new Resolver();
 resolver.setServers(['1.1.1.1', '8.8.8.8']);

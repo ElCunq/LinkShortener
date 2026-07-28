@@ -215,7 +215,9 @@ router.get('/:id/qrcode', async (req: AuthenticatedRequest, res: Response): Prom
     }
 
     const domain = await DataService.findDomainById(link.domain_id);
-    const hostname = domain ? domain.hostname : (process.env.SYSTEM_DOMAIN || 'localhost');
+    const fqdnParts = (process.env.SERVICE_FQDN_LINK_SHORTENER || '').split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean);
+    const fallbackDomain = fqdnParts[1] || fqdnParts[0] || process.env.SYSTEM_DOMAIN || 'localhost';
+    const hostname = domain ? domain.hostname : fallbackDomain;
     const protocol = domain?.ssl_status === 'active' ? 'https' : 'http';
     const shortUrl = `${protocol}://${hostname}/${link.slug}`;
 

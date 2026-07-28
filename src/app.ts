@@ -46,27 +46,36 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'Link Shortener API', db_host: process.env.DB_HOST || 'localhost' });
 });
 
+// ─── Auto-detect domains from Coolify FQDN injection ───
+// Coolify injects SERVICE_FQDN_LINK_SHORTENER with all domains from the Domains (FQDN) field.
+// Convention: 1st domain = Admin Panel, 2nd domain = Shortener
+function parseCoolifyDomains(): { adminDomain: string; systemDomain: string } {
+  const fqdnRaw = process.env.SERVICE_FQDN_LINK_SHORTENER || '';
+  const parts = fqdnRaw.split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean);
+
+  return {
+    adminDomain: parts[0] || process.env.ADMIN_DOMAIN || 'localhost',
+    systemDomain: parts[1] || parts[0] || process.env.SYSTEM_DOMAIN || 'localhost',
+  };
+}
+
+const { adminDomain, systemDomain } = parseCoolifyDomains();
+
 // Public config endpoint for frontend dynamic domain resolution
 app.get('/api/v1/config', (req: Request, res: Response) => {
-  res.status(200).json({
-    admin_domain: process.env.ADMIN_DOMAIN || 'localhost',
-    system_domain: process.env.SYSTEM_DOMAIN || 'localhost',
-  });
+  res.status(200).json({ admin_domain: adminDomain, system_domain: systemDomain });
 });
 
-// Root route: Admin panel ONLY on ADMIN_DOMAIN, 404 on everything else (Shlink-style isolation)
+// Root route: Admin panel ONLY on admin domain, 404 on everything else
 app.get('/', (req: Request, res: Response) => {
   const rawHost = req.get('host') || req.headers.host || req.hostname || 'localhost';
   const cleanHost = rawHost.split(':')[0].toLowerCase();
-  const adminDomain = (process.env.ADMIN_DOMAIN || 'localhost').toLowerCase().trim();
 
-  // localhost and 127.0.0.1 are always allowed for development
-  const isAdmin = cleanHost === adminDomain || cleanHost === 'localhost' || cleanHost === '127.0.0.1';
+  const isAdmin = cleanHost === adminDomain.toLowerCase() || cleanHost === 'localhost' || cleanHost === '127.0.0.1';
 
   if (isAdmin) {
     res.sendFile(path.join(__dirname, '../public/index.html'));
   } else {
-    // Shortener domains return a clean 404 and NEVER expose admin portal
     res.status(404).send(`
       <!DOCTYPE html>
       <html lang="tr">
