@@ -87,3 +87,13 @@ CREATE TRIGGER on_click_event_created
   FOR EACH ROW
   EXECUTE FUNCTION notify_click_webhook();
 
+-- Register webhook in Supabase Studio UI (_webhooks table) so it shows in Dashboard
+INSERT INTO public._webhooks (name, target_table, target_url, events, status)
+VALUES (
+  'click_events_webhook',
+  'click_events',
+  'https://shorts.orfa.dev/api/v1/webhooks/clicks',
+  'INSERT',
+  'active'
+) ON CONFLICT DO NOTHING;
+
