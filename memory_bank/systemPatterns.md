@@ -1,51 +1,54 @@
 # System Patterns & Architecture
 
-## System Architecture
+## Dual Microservice Architecture
 
 ```text
-Visitor / API Client
-        │
-        ▼
-   Express App (src/app.ts)
-   ├── Security & Helmet Headers
-   ├── Global Rate Limiter
-   ├── REST API Routers (/api/v1/*)
-   │     ├── /auth       (JWT Register/Login/Refresh)
-   │     ├── /domains    (DNS Verification & Management)
-   │     ├── /links      (Short link CRUD & Analytics)
-   │     └── /api-keys   (Live API Keys generation)
-   │
-   └── Redirect Router (GET /:slug)
-         │
-         ▼
-    RedirectService (Cache Lookup)
-         │
-         ├── [Hit]  ──► 301/302 Redirect + Async Click Event Logger
-         └── [Miss] ──► Query Database (db.orfa.dev Supabase PostgreSQL)
+               ┌─────────────────────────────────────────┐
+               │ Coolify Ingress (Traefik Reverse Proxy) │
+               └────────────────────┬────────────────────┘
+                                    │
+           ┌────────────────────────┴────────────────────────┐
+           ▼                                                 ▼
+┌──────────────────────────────┐          ┌──────────────────────────────┐
+│        admin-panel           │          │       shortener-engine       │
+│      (APP_MODE=admin)        │          │     (APP_MODE=shortener)    │
+├──────────────────────────────┤          ├──────────────────────────────┤
+│ • Web Dashboard UI (public/) │          │ • HTTP 301/302 Redirect Engine│
+│ • User Auth & JWT Routes     │          │ • Root / returns 404 Page    │
+│ • Live API Keys (/api-keys)  │          │ • Admin Panel Unaccessible   │
+│ • Domain Management & DNS    │          │ • Non-blocking Async Clicks  │
+│ • REST API Endpoints         │          └──────────────┬───────────────┘
+└──────────────┬───────────────┘                         │
+               │                                         │
+               └────────────────────┬────────────────────┘
+                                    ▼
+                     ┌─────────────────────────────┐
+                     │ PostgreSQL / Supabase Engine│
+                     └─────────────────────────────┘
 ```
 
-## Core Patterns & Design Decisions
+---
 
-### 1. Dual Authentication Pattern (`src/middleware/auth.ts`)
+## Core System Patterns & Design Decisions
+
+### 1. Dual-Mode Server Pattern (`src/app.ts`)
+- The single codebase runs in 2 distinct modes depending on `APP_MODE`:
+  - `APP_MODE=admin`: Mounts static UI assets, API rate limiter, `/api/v1/*` routes, and root dashboard.
+  - `APP_MODE=shortener`: Serves only redirect routing (`/:slug`) and returns 404 for root `/`.
+
+### 2. Dual Authentication Pattern (`src/middleware/auth.ts`)
 - Accepts standard JWT Bearer tokens (`Authorization: Bearer eyJhbG...`).
 - Accepts live API Keys (`Authorization: Bearer sl_live_...`).
-- API keys are hashed via SHA-256 before database lookup to prevent plaintext credential exposure in DB dumps.
+- API keys are hashed via SHA-256 before database lookup to prevent credential exposure in DB dumps.
 
-### 2. DNS Verification State Machine (`src/services/dnsService.ts`)
-- Domain states: `pending` -> `verified` -> `active`.
-- TXT Record: `_shortlink-verification.<hostname>` containing random hex token.
-- CNAME Record: `<hostname>` pointing to `CNAME_TARGET`.
-- Prevents domain hijacking by requiring random TXT token match before domain activation.
+### 3. Cascade Deletion Pattern (`src/services/dataService.ts` & `src/services/supabaseService.ts`)
+- Before deleting a `short_link`, associated `click_events` rows are deleted first.
+- Before deleting a `domain`, associated `click_events` and `short_links` rows are deleted first.
+- Satisfies PostgreSQL foreign key constraints (`23503`) across both direct PG pool connection and Supabase REST API.
 
-### 3. Database Connection & Schema (`src/db/connection.ts` & `src/db/schema.sql`)
-- Connects to Supabase / PostgreSQL database at host `db.orfa.dev`.
-- Tablolar:
-  - `users`: User credentials and status.
-  - `domains`: Custom domain hostnames, verification tokens, SSL status.
-  - `short_links`: Slug mapping, target URLs, expiration dates. `CONSTRAINT unique_domain_slug UNIQUE(domain_id, slug)`.
-  - `click_events`: Analytics records with browser, OS, device, referrer, and hashed IP.
-  - `api_keys`: Developer keys, key hashes, last used timestamp.
+### 4. Dynamic Live Stream Analytics Pattern (`public/app.js`)
+- `startLiveAnalyticsPolling()` executes `fetchLinksSilently()` every 5 seconds.
+- Updates state, analytics dropdown, total clicks, and device/browser/referrer charts in place without triggering page refresh (F5).
 
-### 4. Non-Blocking Asynchronous Click Tracking (`src/services/redirectService.ts`)
-- Click analytics recording runs asynchronously via `setImmediate()` during HTTP redirects.
-- Ensures analytics database writes never delay visitor redirect response time.
+### 5. Safe Response Parsing Pattern (`public/app.js`)
+- `apiGet`, `apiPost`, `apiDelete` use `await res.text()` followed by `try { JSON.parse(text) }` to prevent empty 204/200 responses from throwing `SyntaxError: Unexpected end of JSON input`.

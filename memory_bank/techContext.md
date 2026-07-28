@@ -1,15 +1,20 @@
-# Tech Context
+# Tech Context - Stack & Deployment Specification
 
 ## Technology Stack
-- **Language**: TypeScript (ES2022 / CommonJS build output)
-- **Runtime**: Node.js (v18+)
-- **Web Framework**: Express.js 4.x
-- **Database**: Supabase / PostgreSQL (Host: `db.orfa.dev`, Port: `5432`, Driver: `pg`)
-- **Authentication**: `jsonwebtoken` (JWT), `bcryptjs` (password hashing), SHA-256 API Key hashing
-- **Security**: `helmet`, `cors`, `express-rate-limit`
-- **Testing**: Jest 29, Supertest 7, `ts-jest`
+- **Language**: TypeScript (Strict Mode, ES2022 / CommonJS output)
+- **Runtime**: Node.js v20 (Alpine Docker image)
+- **Web Framework**: Express.js 4.x (Dual-mode: `APP_MODE=admin` | `APP_MODE=shortener`)
+- **Database**: Supabase / PostgreSQL (Host: `DB_HOST`, Port: `5432`, Driver: `pg`)
+- **Authentication**: `jsonwebtoken` (JWT Access/Refresh), `bcryptjs` (password hashing), SHA-256 API Key hashing
+- **Security**: `helmet` (CSP disabled for inline assets/redirects), `cors`, `express-rate-limit`
+- **QR Engine**: `qrcode` (DataURL generation)
+- **Testing**: Jest 29, Supertest 7, `ts-jest` (19/19 passing integration tests)
+- **Containerization**: Multi-stage Dockerfile with layer caching & Docker Compose
 
-## Development Commands
+---
+
+## Commands Specification
+
 ```bash
 # Install dependencies
 npm install
@@ -20,27 +25,33 @@ npm run dev
 # Run full integration test suite
 npm test
 
-# Build TypeScript to production dist/
+# Production build TypeScript to dist/
 npm run build
 
 # Start production server
 npm start
 ```
 
-## Environment Variables Configuration (.env)
-```env
-PORT=3000
-NODE_ENV=development
-DB_HOST=db.orfa.dev
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_supabase_password
-DB_NAME=postgres
-DB_SSL=true
-JWT_SECRET=super_secret_jwt_key_change_in_production
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_SECRET=super_secret_refresh_jwt_key
-JWT_REFRESH_EXPIRES_IN=7d
-CNAME_TARGET=domains.shortlink-service.com
-SYSTEM_DOMAIN=go.orfa.dev
-```
+---
+
+## Environment Variables (.env & Coolify Config)
+
+| Variable | Description | Default |
+|---|---|---|
+| `PORT` | HTTP Port | `3000` |
+| `NODE_ENV` | Environment mode | `production` |
+| `APP_MODE` | Microservice mode (`admin` \| `shortener`) | `admin` |
+| `DB_HOST` | PostgreSQL Host | Required |
+| `DB_PORT` | PostgreSQL Port | `5432` |
+| `DB_USER` | PostgreSQL Username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL Password | Required |
+| `DB_NAME` | PostgreSQL Database Name | `postgres` |
+| `DB_SSL` | Enable SSL for DB pool | `false` |
+| `JWT_SECRET` | JWT Access Token Signing Key | Required |
+| `JWT_EXPIRES_IN` | Access Token Lifetime | `1h` |
+| `JWT_REFRESH_SECRET` | JWT Refresh Token Signing Key | Required |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh Token Lifetime | `7d` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase REST URL | Optional |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Service Key | Optional |
+
+*Note: Zero domain environment variables are required. Domains are auto-detected from Coolify FQDN injection or request headers.*
