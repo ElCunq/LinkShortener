@@ -58,3 +58,32 @@ CREATE TABLE IF NOT EXISTS api_keys (
 CREATE INDEX IF NOT EXISTS idx_domains_hostname ON domains(hostname);
 CREATE INDEX IF NOT EXISTS idx_short_links_lookup ON short_links(domain_id, slug);
 CREATE INDEX IF NOT EXISTS idx_click_events_link ON click_events(short_link_id);
+
+-- ════════════════════════════════════════════════════════════
+-- SUPABASE AUTOMATED DATABASE WEBHOOK (pg_net Trigger)
+-- ════════════════════════════════════════════════════════════
+-- Enables real-time HTTP push to our backend whenever a click occurs
+CREATE EXTENSION IF NOT EXISTS pg_net;
+
+CREATE OR REPLACE FUNCTION notify_click_webhook()
+RETURNS trigger AS $$
+BEGIN
+  PERFORM net.http_post(
+    url := 'https://shorts.orfa.dev/api/v1/webhooks/clicks',
+    headers := '{"Content-Type": "application/json"}'::jsonb,
+    body := jsonb_build_object(
+      'type', 'INSERT',
+      'table', 'click_events',
+      'record', row_to_json(NEW)
+    )
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_click_event_created ON click_events;
+CREATE TRIGGER on_click_event_created
+  AFTER INSERT ON click_events
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_click_webhook();
+
