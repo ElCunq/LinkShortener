@@ -1,119 +1,89 @@
-# Custom Domain Link Shortener API & Service
+# Custom Domain Link Shortener SaaS (Dual Microservice Architecture)
 
-Özel domain destekli, performanslı ve güvenli URL kısaltma SaaS API ve Yönlendirme Servisi. Sunucunuzda barındırılan Supabase / PostgreSQL veritabanı (`db.orfa.dev`) ile entegre çalışır.
+Özel domain destekli, yüksek performanslı, güvenli ve White-Label (markadan bağımsız) URL kısaltma SaaS altyapısı. Çift mikro-servis mimarisi (`admin-panel` ve `shortener-engine`) sayesinde yönetim paneli ve link yönlendirici tamamen izole çalışır.
 
 ---
 
 ## 🌟 Öne Çıkan Özellikler
 
-- 🔗 **Özel Domain Desteği**: Kullanıcıların kendi alt alan adlarını (örn. `go.kullanici.com`) bağlayabilmesi.
-- 🛡️ **DNS Sahiplik Doğrulaması**: CNAME ve TXT kaydı (`_shortlink-verification.<domain>`) sorgulayarak domain sahipliğini otomatik olarak doğrulama.
-- ⚡ **Yüksek Performanslı Yönlendirme**: Önceden önbelleğe alınmış URL bilgileriyle milisaniyeler içinde `301` veya `302` HTTP yönlendirmesi.
-- 🔐 **Gelişmiş Kimlik Doğrulama**: JWT (Access + Refresh Token) ve Canlı API Key (`sl_live_...`) desteği (API Key'ler SHA-256 ile hash'lenerek saklanır).
-- 📊 **Detaylı Tıklama Analitiği**: Tıklama sayıları, yönlendiren siteler (referrer), tarayıcı, işletim sistemi ve cihaz türü istatistikleri.
-- 🛡️ **Siber Güvenlik & Anti-SSRF**: Sadece `http://` ve `https://` protokollerine izin verilir. `javascript:`, `data:`, `localhost` ve özel IP blokları (127.0.0.1, 10.x, 192.168.x) otomatik engellenir. IP adresleri anonimleştirilerek saklanır.
+- 🏢 **Çift Mikro-Servis Mimarisi (Dual Architecture)**:
+  - **`admin-panel`**: Web arayüzü, Giriş/Kayıt, API Key üretimi, İstatistikler.
+  - **`shortener-engine`**: Sadece 301/302 yönlendirmesi yapar. Kısaltma domaininden admin paneline erişilemez (güvenli 404 isolasyonu).
+- 🔗 **%100 Deploysuz Özel Domain Desteği**: Müşterileriniz kendi subdomainlerini (örn: `link.sirket.com`) CNAME olarak yönlendirir. Yeni müşteri domainleri için **asla sunucuyu yeniden başlatmaya veya Coolify'da deploy yapmaya gerek kalmaz.**
+- 🛡️ **DNS Sahiplik Doğrulaması**: CNAME ve TXT kaydı (`_shortlink-verification.<domain>`) sorgulayarak domain sahipliğini otomatik doğrulama.
+- ⚡ **Canlı Akışlı Tıklama Analitiği (Live Stream)**: Tıklama sayıları, cihazlar, tarayıcılar ve yönlendiren siteler (referrer) sayfa yenilenmeden 5 saniyede bir canlı güncellenir.
+- 🔐 **Esnek Kimlik Doğrulama**: JWT (Access + Refresh Token) ve Canlı API Key (`sl_live_...`) desteği (API Key'ler SHA-256 ile saklanır).
+- 📱 **Entegre QR Kod Oluşturucu**: Her kısa link için anında yüksek çözünürlüklü QR kod üretimi ve PNG olarak indirme.
+- 🛡️ **Siber Güvenlik & Anti-SSRF**: Sadece `http://` ve `https://` protokollerine izin verilir. `javascript:`, `data:`, `localhost` ve özel IP blokları (127.0.0.1, 10.x, 192.168.x) otomatik engellenir.
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma Rehberi
+## 🚀 Coolify Sıfır-Ayar Kurulum Rehberi
 
-### 1. Gereksinimler
-- **Node.js**: v18 veya üzeri (Node v26 test edilmiştir)
-- **Veritabanı**: Supabase / PostgreSQL (`db.orfa.dev`)
+Proje **Coolify** üzerinde `docker-compose.yml` ile doğrudan ayağa kaldırılır.
 
-### 2. Bağımlılıkların Yüklenmesi
+### Coolify FQDN (Domains) Yapılandırması
+Coolify panelinde uygulamanın **Domains (FQDN)** alanına 2 domaininizi yazmanız yeterlidir:
+
+```
+https://shorts.orfa.dev,https://go.orfa.dev
+```
+
+- **1. Domain (`shorts.orfa.dev`)** → `admin-panel` (Yönetim Paneli) olarak otomatik atanır.
+- **2. Domain (`go.orfa.dev`)** → `shortener-engine` (Kısaltma Servisi) olarak otomatik atanır.
+
+*Ortam değişkenlerinde (Environment Variables) hiçbir hardcoded domain saklanmaz.*
+
+---
+
+## 💻 Yerel Geliştirme (Local Setup)
+
+### 1. Bağımlılıkların Yüklenmesi
 ```bash
 npm install
 ```
 
-### 3. Ortam Değişkenlerinin Yapılandırılması (`.env`)
-`https://db.orfa.dev/project/link-shortener` (Supabase Studio) panelinizde **Project Settings -> Database** bölümüne giderek bağlantı bilgilerinizi alın ve projedeki `.env` dosyasını doldurun:
-
-```env
-PORT=3000
-NODE_ENV=development
-
-# Supabase / PostgreSQL Veritabanı Bağlantısı
-DB_HOST=db.orfa.dev
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=supabase_veritabani_sifreniz
-DB_NAME=postgres
-DB_SSL=true
-
-# JWT Gizli Anahtarları
-JWT_SECRET=super_secret_jwt_key_change_in_production
-JWT_EXPIRES_IN=1h
-JWT_REFRESH_SECRET=super_secret_refresh_jwt_key
-JWT_REFRESH_EXPIRES_IN=7d
-
-# Domain ve CNAME Yapılandırması
-CNAME_TARGET=domains.shortlink-service.com
-SYSTEM_DOMAIN=go.orfa.dev
-```
-
-### 4. Veritabanı Tablolarının Oluşturulması (Supabase SQL Editor)
-Supabase PostgREST API üzerinden ham SQL komutları doğrudan çalıştırılamaz (`PGRST202` hatası almamak için):
-
-1. `https://db.orfa.dev/project/link-shortener` adresine gidin.
-2. Sol menüden **SQL Editor** sekmesini açın.
-3. Projedeki [`src/db/schema.sql`](file:///home/cunq/Desktop/LinkShortener/src/db/schema.sql) dosyasının içeriğini kopyalayıp yapıştırın ve **Run** (Çalıştır) butonuna basın.
-
-### 5. Geliştirme Modunda Çalıştırma
+### 2. Derleme & Test
 ```bash
-npm run dev
-```
-
-### 6. Üretim (Production) Derlemesi ve Çalıştırma
-```bash
+# TypeScript Derleme
 npm run build
-npm start
-```
 
-### 7. Entegrasyon Testlerini Çalıştırma
-```bash
+# Entegrasyon Testleri (19 Test PASSED)
 npm test
 ```
 
 ---
 
-## 📑 API Kullanım Örnekleri
+## 📑 REST API Dokümantasyonu
 
-### 1. Kullanıcı Kaydı ve Giriş
-- **Kayıt**: `POST /api/v1/auth/register`
-  ```json
-  {
-    "email": "kullanici@orfa.dev",
-    "password": "GuvenliSifre123!"
-  }
-  ```
-- **Giriş**: `POST /api/v1/auth/login`
+Tüm API isteklerinizi canlı API anahtarınız ile atabilirsiniz:
 
-### 2. Domain Ekleme ve Doğrulama
-- **Domain Ekle**: `POST /api/v1/domains`
-  ```json
-  {
-    "hostname": "go.orfa.dev"
-  }
-  ```
-  *Yanıt olarak eklenmesi gereken CNAME ve TXT DNS kayıtları döner.*
-- **DNS Doğrula**: `POST /api/v1/domains/:id/verify`
-
-### 3. Kısa Link Oluşturma
-- **Link Oluştur**: `POST /api/v1/links`
-  ```json
-  {
-    "domain_id": "dom_123456",
-    "destination_url": "https://github.com/torvalds/linux",
-    "custom_slug": "github",
-    "redirect_type": 302
-  }
-  ```
-
-### 4. API Key İle İstek Atma
 ```http
-GET /api/v1/links
-Authorization: Bearer sl_live_xxxxxxxxxxxxxxxxxxxxxxxx
+Authorization: Bearer sl_live_hesap_anahtariniz
+```
+
+### Örnek cURL Kullanımları
+
+#### 1. Kısa Link Oluşturma
+```bash
+curl -X POST https://shorts.orfa.dev/api/v1/links \
+  -H "Authorization: Bearer sl_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://github.com","slug":"github"}'
+```
+
+#### 2. Tıklama Analitiği Alma
+```bash
+curl -X GET https://shorts.orfa.dev/api/v1/links/lnk_xyz/analytics \
+  -H "Authorization: Bearer sl_live_YOUR_KEY"
+```
+
+#### 3. Özel Domain Ekleme
+```bash
+curl -X POST https://shorts.orfa.dev/api/v1/domains \
+  -H "Authorization: Bearer sl_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"hostname":"link.sirketiniz.com"}'
 ```
 
 ---
@@ -121,14 +91,17 @@ Authorization: Bearer sl_live_xxxxxxxxxxxxxxxxxxxxxxxx
 ## 📁 Proje Yapısı
 
 ```text
-├── apiDocumentation.txt # Detaylı API dokümantasyonu
-├── memory_bank/         # Proje hafızası ve süreç dökümantasyonu
+├── Dockerfile           # Multi-Stage önbellekli Docker imajı
+├── docker-compose.yml   # Coolify çift servis yapılandırması
+├── public/              # Web Dashboard UI, CSS ve dinamik JavaScript
+│   ├── index.html       # Yönetim Paneli & API Rehberi HTML
+│   └── app.js           # Canlı akış ve istemci mantığı
 ├── src/
-│   ├── app.ts           # Express uygulaması ve Yönlendirme motoru
+│   ├── app.ts           # Dual-mode Express uygulaması
 │   ├── server.ts        # Sunucu başlatıcı
 │   ├── db/              # Veritabanı bağlantısı ve schema.sql
-│   ├── middleware/      # Auth (JWT ve API Key) middleware
-│   ├── routes/          # Auth, Domains, Links ve API Keys endpoint'leri
-│   └── services/        # Data, DNS, Security ve Redirect servisleri
-└── tests/               # Jest entegrasyon testleri
+│   ├── middleware/      # JWT & API Key auth middleware
+│   ├── routes/          # Auth, Domains, Links, API Keys endpoint'leri
+│   └── services/        # Data, DNS, Security, QR ve Redirect servisleri
+└── tests/               # Entegrasyon ve güvenlik testleri
 ```
