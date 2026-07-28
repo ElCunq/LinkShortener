@@ -179,6 +179,7 @@ router.delete('/:id', async (req: AuthenticatedRequest, res: Response): Promise<
 
     res.status(200).json({ message: 'Short link deleted successfully' });
   } catch (err: any) {
+    console.error('Error deleting short link:', err);
     res.status(500).json({ error: 'Internal server error deleting short link' });
   }
 });

@@ -17,28 +17,34 @@ async function supabaseFetch<T = any>(path: string, options: RequestInit = {}, r
     ...(options.headers as Record<string, string> || {})
   };
 
+  let res: Response;
   try {
-    const res = await fetch(url, { ...options, headers });
-    if (!res.ok) {
-      const errorText = await res.text();
-      let parsed: any;
-      try { parsed = JSON.parse(errorText); } catch {}
-      const msg = parsed?.message || parsed?.error || errorText || `Supabase REST request failed (${res.status})`;
-      throw new Error(msg);
-    }
-
-    const text = await res.text();
-    if (!text || !text.trim() || res.status === 204) {
-      return [] as unknown as T;
-    }
-
-    return JSON.parse(text) as T;
+    res = await fetch(url, { ...options, headers });
   } catch (err: any) {
     if (retries > 0) {
       await new Promise(r => setTimeout(r, 250));
       return supabaseFetch<T>(path, options, retries - 1);
     }
     throw err;
+  }
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    let parsed: any;
+    try { parsed = JSON.parse(errorText); } catch {}
+    const msg = parsed?.message || parsed?.error || errorText || `Supabase REST request failed (${res.status})`;
+    throw new Error(msg);
+  }
+
+  const text = await res.text();
+  if (!text || !text.trim() || res.status === 204) {
+    return [] as unknown as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return [] as unknown as T;
   }
 }
 

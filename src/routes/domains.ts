@@ -145,6 +145,7 @@ router.delete('/:id', async (req: AuthenticatedRequest, res: Response): Promise<
     }
     res.status(200).json({ message: 'Domain deleted successfully' });
   } catch (err: any) {
+    console.error('Error deleting domain:', err);
     res.status(500).json({ error: 'Internal server error deleting domain' });
   }
 });
