@@ -255,8 +255,9 @@ function setupEventListeners() {
       const redirectType = parseInt(document.querySelector('input[name="redirectType"]:checked').value, 10);
 
       if (domainId === 'default_system' || !domainId) {
-        if (state.domains.length > 0) {
-          domainId = state.domains[0].id;
+        const sysDomainObj = state.domains.find(d => d.hostname === state.serverConfig.system_domain);
+        if (sysDomainObj) {
+          domainId = sysDomainObj.id;
         } else {
           // Auto-create default system domain for 0-config instant link shortening
           const systemDomain = await apiPost('/domains', { hostname: state.serverConfig.system_domain });
@@ -597,8 +598,9 @@ function renderLinks() {
 
   state.links.forEach(l => {
     const domain = state.domains.find(d => d.id === l.domain_id);
-    const hostname = domain ? domain.hostname : state.serverConfig.system_domain;
-    const shortUrl = `http://${hostname}/${l.slug}`;
+    const hostname = l.hostname || (domain ? domain.hostname : state.serverConfig.system_domain);
+    const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+    const shortUrl = l.short_url || `${protocol}://${hostname}/${l.slug}`;
 
     const card = document.createElement('div');
     card.className = 'card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4';

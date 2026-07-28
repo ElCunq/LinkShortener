@@ -101,7 +101,25 @@ router.get('/', async (req: AuthenticatedRequest, res: Response): Promise<void> 
     if (domainId) {
       links = links.filter(l => l.domain_id === domainId);
     }
-    res.status(200).json(links);
+
+    const userDomains = await DataService.listDomainsByUserId(req.user!.id);
+    const domainMap = new Map(userDomains.map(d => [d.id, d]));
+
+    const fqdnRaw = process.env.SYSTEM_DOMAIN || process.env.SHORTENER_FQDN || process.env.SERVICE_FQDN_SHORTENER_ENGINE || '';
+    const fallbackHost = fqdnRaw.split(',').map(d => d.trim().replace(/^https?:\/\//, '').replace(/\/$/, '')).filter(Boolean)[0] || 'localhost';
+
+    const enrichedLinks = links.map(l => {
+      const domain = domainMap.get(l.domain_id);
+      const hostname = domain ? domain.hostname : fallbackHost;
+      const protocol = domain?.ssl_status === 'active' ? 'https' : 'https';
+      return {
+        ...l,
+        hostname,
+        short_url: `${protocol}://${hostname}/${l.slug}`
+      };
+    });
+
+    res.status(200).json(enrichedLinks);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal server error listing short links' });
   }
