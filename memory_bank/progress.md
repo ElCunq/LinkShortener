@@ -39,5 +39,5 @@
 - [x] **UI Modal Mappings**: Fixed element ID mappings for QR Code Modal (`qrImageDisplay`) and API Key Modal (`newApiKeyInput`), enabling 1-click API Key display & clipboard copy.
 - [x] **CNAME Custom Domain 404 Routing Fix**: Added global slug fallback in `findLinkByDomainAndSlug` across `supabaseService.ts` and `dataService.ts`, ensuring custom CNAME domains (e.g., `orfadev.com/git` -> `go.orfa.dev` or `shorts.orfa.dev`) resolve and redirect short links cleanly without 404 errors.
 - [x] **Fast Batch Deletion**: Replaced sequential HTTP loop in `deleteDomain` with a single batch `in(...)` subquery, preventing network thread blocking during deletion.
-- [x] **CNAME Target Guide Fix**: Updated `domains.ts` and `app.js` so the CNAME target guide always specifies the `shortener-engine` domain (`go.orfa.dev`) instead of the `admin-panel` domain (`shorts.orfa.dev`), eliminating Traefik 'no available server' errors.
+- [x] **Automated Traefik Dynamic Router Generation**: Created `TraefikService` (`src/services/traefikService.ts`) which automatically creates dynamic Traefik router YAML files (`/etc/traefik/dynamic/domain_xyz.yml`) upon domain verification in Coolify, eliminating "no available server" errors without manual Coolify UI entries.
 - [x] **Full Integration Test Suite**: All 19 integration tests passing cleanly (`npm test`).
