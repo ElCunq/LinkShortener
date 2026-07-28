@@ -8,6 +8,7 @@ import domainRoutes from './routes/domains';
 import linkRoutes from './routes/links';
 import apiKeyRoutes from './routes/apiKeys';
 import { RedirectService } from './services/redirectService';
+import { DataService } from './services/dataService';
 
 const app = express();
 
@@ -61,6 +62,38 @@ if (APP_MODE === 'admin') {
       admin_domain: req.get('host')?.split(':')[0] || 'localhost',
       system_domain: cleanShortener || 'localhost',
     });
+  });
+
+  // Caddy On-Demand TLS authorization check endpoint
+  app.get('/internal/domain-check', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const rawDomain = req.query.domain || req.query.domain_name || req.query.host || '';
+      const domainName = String(rawDomain).trim().toLowerCase().split(':')[0];
+      if (!domainName) {
+        res.sendStatus(400);
+        return;
+      }
+
+      // 1. Check if domain is registered in database
+      const domain = await DataService.findDomainByHostname(domainName);
+      if (domain) {
+        res.sendStatus(200);
+        return;
+      }
+
+      // 2. Allow system shortener domain, admin domain & localhost
+      const sysDomain = (process.env.SYSTEM_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+      const adminDomain = (process.env.ADMIN_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+      if (domainName === sysDomain || domainName === adminDomain || domainName === 'localhost') {
+        res.sendStatus(200);
+        return;
+      }
+
+      res.sendStatus(403);
+    } catch (err) {
+      console.error('Error checking domain for Caddy TLS:', err);
+      res.sendStatus(500);
+    }
   });
 
   // Root serves admin panel

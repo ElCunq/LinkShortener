@@ -16,6 +16,7 @@ services:
       - APP_MODE=admin
       - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
       - SHORTENER_FQDN=${SHORTENER_FQDN:-go.orfa.dev}
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-shorts.orfa.dev}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}
@@ -52,6 +53,7 @@ services:
       - APP_MODE=shortener
       - SYSTEM_DOMAIN=${SYSTEM_DOMAIN:-go.orfa.dev}
       - SHORTENER_FQDN=${SHORTENER_FQDN:-go.orfa.dev}
+      - ADMIN_DOMAIN=${ADMIN_DOMAIN:-shorts.orfa.dev}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_USER=${DB_USER:-postgres}
@@ -72,3 +74,22 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: link-shortener-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - admin-panel
+      - shortener-engine
+
+volumes:
+  caddy_data:
+  caddy_config:
