@@ -39,5 +39,5 @@
 - [x] **UI Modal Mappings**: Fixed element ID mappings for QR Code Modal (`qrImageDisplay`) and API Key Modal (`newApiKeyInput`), enabling 1-click API Key display & clipboard copy.
 - [x] **CNAME Custom Domain 404 Routing Fix**: Added global slug fallback in `findLinkByDomainAndSlug` across `supabaseService.ts` and `dataService.ts`, ensuring custom CNAME domains (e.g., `orfadev.com/git` -> `go.orfa.dev` or `shorts.orfa.dev`) resolve and redirect short links cleanly without 404 errors.
 - [x] **Fast Batch Deletion**: Replaced sequential HTTP loop in `deleteDomain` with a single batch `in(...)` subquery, preventing network thread blocking during deletion.
-- [x] **Caddy On-Demand TLS Architecture**: Created `Caddyfile`, `Dockerfile.caddy`, internal port expose (`expose: ["80", "443"]`), and `GET /internal/domain-check` authorization endpoint, enabling automated zero-config HTTPS certificate issuance without Coolify Traefik port 80 allocation collisions.
+- [x] **Dual Distribution Mode (Turnkey Handover)**: Configured default `docker-compose.yml` for Standalone client handover (Caddy On-Demand TLS on ports 80/443 with zero manual work) and `docker-compose.coolify.yml` for internal Coolify deployment.
 - [x] **Full Integration Test Suite**: All 19 integration tests passing cleanly (`npm test`).
