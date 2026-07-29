@@ -77,25 +77,5 @@ services:
       retries: 3
       start_period: 5s
 
-  caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile.caddy
-    container_name: link-shortener-caddy
-    restart: unless-stopped
-    expose:
-      - "80"
-      - "443"
-    labels:
-      - "coolify.managed=true"
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - admin-panel
-      - shortener-engine
-
 volumes:
-  caddy_data:
-  caddy_config:
   traefik_dynamic:
