@@ -1,55 +1,109 @@
 import fs from 'fs';
 import path from 'path';
+import { DataService } from './dataService';
 
-const DYNAMIC_PATH = process.env.TRAEFIK_DYNAMIC_PATH || '/etc/traefik/dynamic';
+const PRIMARY_CONFIG_PATH = process.env.TRAEFIK_CONFIG_FILE || '/data/coolify/proxy/dynamic/shortlink-domains.yml';
+const FALLBACK_CONFIG_PATH = '/dynamic/shortlink-domains.yml';
 
 export class TraefikService {
   /**
-   * Generates a dynamic Traefik YAML router file for custom domain SSL termination in Coolify
+   * Syncs all active verified custom domains into Coolify's Traefik dynamic configuration file.
+   * Uses atomic write (.tmp -> rename) to prevent Traefik reading partial YAML files.
    */
-  static syncDomain(hostname: string): boolean {
+  static async syncAllDomains(): Promise<boolean> {
     try {
-      if (!fs.existsSync(DYNAMIC_PATH)) {
-        fs.mkdirSync(DYNAMIC_PATH, { recursive: true });
+      const allDomains = await DataService.listAllActiveDomains();
+      const activeHostnames = Array.from(
+        new Set(
+          allDomains
+            .map(d => d.hostname?.trim()?.toLowerCase())
+            .filter((h): h is string => Boolean(h && h.length > 0 && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(h)))
+        )
+      );
+
+      let targetPath = PRIMARY_CONFIG_PATH;
+      let targetDir = path.dirname(targetPath);
+
+      if (!fs.existsSync(targetDir)) {
+        try {
+          fs.mkdirSync(targetDir, { recursive: true });
+        } catch (e) {
+          targetPath = FALLBACK_CONFIG_PATH;
+          targetDir = path.dirname(targetPath);
+          if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+          }
+        }
       }
 
-      const cleanHost = hostname.trim().toLowerCase();
-      const safeName = cleanHost.replace(/[^a-z0-9]/g, '_');
-      const filePath = path.join(DYNAMIC_PATH, `domain_${safeName}.yml`);
+      const tmpPath = `${targetPath}.tmp`;
+
+      // If no active custom domains exist, clear the router rules safely
+      if (activeHostnames.length === 0) {
+        const emptyYaml = `http:
+  routers: {}
+  services: {}
+`;
+        fs.writeFileSync(tmpPath, emptyYaml, 'utf8');
+        fs.renameSync(tmpPath, targetPath);
+        console.log(`[TraefikService] Reset dynamic YAML (no active domains) at ${targetPath}`);
+        return true;
+      }
+
+      const hostRules = activeHostnames.map(h => `Host(\`${h}\`)`).join(' || ');
+      const targetServiceUrl = process.env.TARGET_URL || 'http://shortener-engine:3000';
+      const certResolver = process.env.CERT_RESOLVER || 'letsencrypt';
 
       const yamlContent = `http:
   routers:
-    shortener_${safeName}:
-      rule: "Host(\`${cleanHost}\`)"
-      service: "link-shortener-engine-3000@docker"
+    shortlink-custom-domains:
+      rule: "${hostRules}"
+      entryPoints:
+        - https
+      service: shortlink-service
       tls:
-        certResolver: "letsencrypt"
+        certResolver: "${certResolver}"
+
+    shortlink-custom-domains-http:
+      rule: "${hostRules}"
+      entryPoints:
+        - http
+      middlewares:
+        - shortlink-https-redirect
+      service: shortlink-service
+
+  middlewares:
+    shortlink-https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  services:
+    shortlink-service:
+      loadBalancer:
+        servers:
+          - url: "${targetServiceUrl}"
 `;
 
-      fs.writeFileSync(filePath, yamlContent, 'utf8');
-      console.log(`[TraefikService] Dynamic router sync for ${cleanHost} at ${filePath}`);
+      fs.writeFileSync(tmpPath, yamlContent, 'utf8');
+      fs.renameSync(tmpPath, targetPath);
+
+      console.log(`[TraefikService] Atomically synced ${activeHostnames.length} custom domains to ${targetPath}`);
       return true;
-    } catch (err) {
-      // Non-fatal if directory is not mounted or writable
+    } catch (err: any) {
+      console.error('[TraefikService] Failed to sync Traefik dynamic configuration:', err?.message || err);
       return false;
     }
   }
 
   /**
-   * Removes dynamic Traefik YAML router file when domain is deleted
+   * Helper called when a domain is verified or deleted
    */
-  static removeDomain(hostname: string): boolean {
-    try {
-      const cleanHost = hostname.trim().toLowerCase();
-      const safeName = cleanHost.replace(/[^a-z0-9]/g, '_');
-      const filePath = path.join(DYNAMIC_PATH, `domain_${safeName}.yml`);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        console.log(`[TraefikService] Dynamic router removed for ${cleanHost}`);
-      }
-      return true;
-    } catch (err) {
-      return false;
-    }
+  static async syncDomain(_hostname?: string): Promise<boolean> {
+    return await TraefikService.syncAllDomains();
+  }
+
+  static async removeDomain(_hostname?: string): Promise<boolean> {
+    return await TraefikService.syncAllDomains();
   }
 }

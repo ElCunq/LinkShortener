@@ -1,5 +1,6 @@
 import app from './app';
 import { checkDbConnection } from './db/connection';
+import { TraefikService } from './services/traefikService';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -11,6 +12,9 @@ async function startServer() {
 
   // Test database connection
   await checkDbConnection();
+
+  // Sync Traefik dynamic custom domain routers
+  await TraefikService.syncAllDomains();
 
   app.listen(PORT, () => {
     console.log(`🚀 Link Shortener Service is running on port ${PORT}`);

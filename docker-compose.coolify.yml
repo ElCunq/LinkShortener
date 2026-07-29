@@ -27,6 +27,8 @@ services:
       - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - /data/coolify/proxy/dynamic:/data/coolify/proxy/dynamic
     labels:
       - "coolify.managed=true"
     healthcheck:

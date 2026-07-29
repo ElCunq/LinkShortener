@@ -80,6 +80,10 @@ export class SupabaseService {
     return await supabaseFetch<Domain[]>(`/domains?user_id=eq.${encodeURIComponent(userId)}&select=*`);
   }
 
+  static async listAllActiveDomains(): Promise<Domain[]> {
+    return await supabaseFetch<Domain[]>(`/domains?or=(verification_status.eq.active,verification_status.eq.verified)&select=*`);
+  }
+
   static async findDomainById(id: string): Promise<Domain | null> {
     const domains = await supabaseFetch<Domain[]>(`/domains?id=eq.${encodeURIComponent(id)}&select=*`);
     return domains.length > 0 ? domains[0] : null;

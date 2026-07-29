@@ -184,6 +184,19 @@ export class DataService {
     }
   }
 
+  static async listAllActiveDomains(): Promise<Domain[]> {
+    if (isSupabaseMode()) {
+      return await SupabaseService.listAllActiveDomains();
+    } else if (isDbLive()) {
+      const res = await pool.query(`SELECT * FROM domains WHERE verification_status IN ('active', 'verified')`);
+      return res.rows;
+    } else {
+      return Array.from(memoryDb.domains.values()).filter(
+        d => d.verification_status === 'active' || d.verification_status === 'verified'
+      );
+    }
+  }
+
   static async findDomainById(id: string): Promise<Domain | null> {
     if (isSupabaseMode()) {
       return await SupabaseService.findDomainById(id);
