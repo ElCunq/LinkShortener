@@ -1,7 +1,7 @@
 # Multi-Stage Dockerfile with Layer Caching for Fast Coolify Deployments
 
 # Stage 1: Build Dependencies & Source
-FROM public.ecr.aws/docker/library/node:20-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Step 1: Copy dependency manifests to leverage Docker layer caching
@@ -14,7 +14,7 @@ COPY public ./public
 RUN npm run build
 
 # Stage 2: Production Lightweight Image
-FROM public.ecr.aws/docker/library/node:20-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
